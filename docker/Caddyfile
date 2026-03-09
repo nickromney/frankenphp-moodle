@@ -1,0 +1,47 @@
+{
+	skip_install_trust
+
+	{$CADDY_GLOBAL_OPTIONS}
+
+	frankenphp {
+		{$FRANKENPHP_CONFIG}
+	}
+}
+
+{$CADDY_EXTRA_CONFIG}
+
+{$SERVER_NAME:moodle.docker.test.127.0.0.1.sslip.io} {
+	root * /app/public/public
+	encode zstd br gzip
+	tls internal
+
+	{$CADDY_SERVER_EXTRA_DIRECTIVES}
+
+	route {
+		@canonicalPath {
+			file {path}/index.php
+			not path */
+		}
+		redir @canonicalPath {http.request.orig_uri.path}/ 308
+
+		@phpPathInfo path_regexp phpPathInfo ^(.+\.php)(/.*)$
+		handle @phpPathInfo {
+			rewrite * {re.phpPathInfo.1}
+			php {
+				env PATH_INFO {re.phpPathInfo.2}
+				env PHP_SELF {re.phpPathInfo.1}
+				env SCRIPT_NAME {re.phpPathInfo.1}
+			}
+		}
+
+		@indexFiles file {
+			try_files {path} {path}/index.php index.php
+			try_policy first_exist_fallback
+		}
+		rewrite @indexFiles {file_match.relative}
+
+		@phpFiles path *.php
+		php @phpFiles
+		file_server
+	}
+}
