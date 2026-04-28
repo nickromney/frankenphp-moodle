@@ -3,8 +3,8 @@ FROM composer:2 AS composer-bin
 
 FROM ${FRANKENPHP_IMAGE}
 
-ARG MOODLE_SERIES=stable501
-ARG MOODLE_VERSION=5.1.3
+ARG MOODLE_SERIES=stable502
+ARG MOODLE_VERSION=5.2
 ARG MOODLE_PACKAGE_URL=
 ARG MOODLE_PHP_EXTENSIONS="gd intl mysqli pdo_mysql soap zip ldap"
 
@@ -20,7 +20,7 @@ RUN mkdir -p /app/public /app/moodledata /app/config
 WORKDIR /app/public
 
 RUN set -eux; \
-    package_url="${MOODLE_PACKAGE_URL:-https://packaging.moodle.org/${MOODLE_SERIES}/moodle-${MOODLE_VERSION}.tgz}"; \
+    package_url="${MOODLE_PACKAGE_URL:-https://download.moodle.org/download.php/direct/${MOODLE_SERIES}/moodle-${MOODLE_VERSION}.tgz}"; \
     curl -fsSL -o /tmp/moodle.tgz "${package_url}"; \
     tar -xzf /tmp/moodle.tgz --strip-components=1 -C /app/public; \
     rm -f /tmp/moodle.tgz; \

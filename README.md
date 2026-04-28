@@ -15,7 +15,7 @@ It is for the container runtime itself: image shape, required PHP extensions, Mo
 The current maintained baseline is:
 
 - FrankenPHP with PHP `8.4`
-- Moodle `5.1.3`
+- Moodle `5.2`
 - MariaDB
 - Docker
 - HTTPS on `moodle.docker.test.127.0.0.1.sslip.io`
