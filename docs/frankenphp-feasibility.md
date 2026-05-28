@@ -3,7 +3,7 @@
 This repo has a rerunnable FrankenPHP baseline for the narrow Docker target, exposed as a root `Dockerfile` plus `compose.yml`:
 
 - PHP `8.4`
-- Moodle `5.1.3`
+- Moodle `5.2`
 - MariaDB
 - HTTPS in Docker via Caddy's local CA
 
