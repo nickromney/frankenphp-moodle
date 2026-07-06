@@ -27,7 +27,7 @@ services:
       args:
         FRANKENPHP_IMAGE: ${FRANKENPHP_IMAGE:-dunglas/frankenphp:php8.4-bookworm}
         MOODLE_SERIES: ${MOODLE_SERIES:-stable502}
-        MOODLE_VERSION: ${MOODLE_VERSION:-5.2}
+        MOODLE_VERSION: ${MOODLE_VERSION:-5.2.1}
         MOODLE_PACKAGE_URL: ${MOODLE_PACKAGE_URL:-}
     depends_on:
       db:
