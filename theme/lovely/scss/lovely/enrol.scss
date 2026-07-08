@@ -1,0 +1,47 @@
+//
+// Lovely - enrolment page polish (/enrol/index.php: guest and self-enrolment info page).
+//
+// The enrolment options page is one of the first things a prospective student sees, and stock
+// Boost leaves it as bare boxes. Card-ify the course summary and each enrolment instance.
+//
+
+#page-enrol-index {
+    #region-main > h1,
+    #region-main > h2 {
+        color: $lovely-primary-900;
+        margin-bottom: 1.25rem;
+    }
+
+    // The course summary box and each enrolment instance wrapper.
+    .generalbox {
+        border: 0;
+        border-radius: $card-border-radius;
+        background-color: $white;
+        box-shadow: $box-shadow-sm;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+
+        > h2,
+        > h3,
+        legend {
+            color: $lovely-primary-900;
+            font-size: 1.125rem;
+            border-bottom: 1px solid $lovely-gray-200;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+        }
+    }
+
+    // Course summary imagery.
+    .course-summary-image img,
+    .courseimage img {
+        border-radius: $border-radius;
+        max-width: 100%;
+    }
+
+    // Enrol buttons deserve some presence.
+    .enrolbtn .btn,
+    .generalbox .btn-primary {
+        min-width: 12rem;
+    }
+}

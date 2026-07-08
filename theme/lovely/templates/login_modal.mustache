@@ -1,0 +1,73 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template theme_lovely/login_modal
+
+    Modal login dialog (original theme_lovely template). A plain Bootstrap 5 modal wrapping
+    a real POST to /login/index.php, including the CSRF logintoken - the exact same fields
+    the core login form submits, so every core auth hook (lockout, password policy, MFA
+    redirects) behaves identically. Opened by the "Log in" link in the navbar (see the
+    core/user_menu template override).
+
+    Context variables required for this template:
+    * loginurl - the login/index.php URL to POST to
+    * logintoken - the CSRF login token for this session
+    * sitename - the site full name for the dialog title
+    * forgoturl - the forgot-password URL
+
+    Example context (json):
+    {
+        "loginurl": "https://example.com/login/index.php",
+        "logintoken": "abcdef123456",
+        "sitename": "Example Institute",
+        "forgoturl": "https://example.com/login/forgot_password.php"
+    }
+}}
+<div class="modal fade lovely-login-modal" id="lovely-login-modal" tabindex="-1"
+     aria-labelledby="lovely-login-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h4" id="lovely-login-modal-title">
+                    {{#str}} loginmodaltitle, theme_lovely, {{sitename}} {{/str}}
+                </h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="{{#str}} closebuttontitle, core {{/str}}"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{{loginurl}}" class="lovely-login-modal-form">
+                    <input type="hidden" name="logintoken" value="{{logintoken}}">
+                    <div class="mb-3">
+                        <label for="lovely-login-username" class="form-label">{{#str}} username, core {{/str}}</label>
+                        <input type="text" name="username" id="lovely-login-username"
+                               class="form-control" autocomplete="username" autocapitalize="none" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="lovely-login-password" class="form-label">{{#str}} password, core {{/str}}</label>
+                        <input type="password" name="password" id="lovely-login-password"
+                               class="form-control" autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">{{#str}} login, core {{/str}}</button>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <a href="{{forgoturl}}">{{#str}} forgotten, core {{/str}}</a>
+                <a href="{{loginurl}}">{{#str}} login, core {{/str}} &raquo;</a>
+            </div>
+        </div>
+    </div>
+</div>

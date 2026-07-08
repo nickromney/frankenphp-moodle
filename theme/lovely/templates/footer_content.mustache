@@ -1,0 +1,73 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template theme_lovely/footer_content
+
+    Themed site footer: up to four admin-configured content columns, social network icons,
+    and a footnote strip (original theme_lovely template). Rendered above Boost's standard
+    footer popover via the theme's footer.mustache override.
+
+    Context variables required for this template:
+    * hascolumns - whether any columns have content
+    * columns - array of {content} (pre-formatted HTML)
+    * columnclass - Bootstrap column class sizing the row
+    * hassocial - whether any social icons are configured
+    * socialicons - array of {name, url, icon, label}
+    * footnote - pre-formatted footnote HTML or null
+
+    Example context (json):
+    {
+        "hascolumns": true,
+        "columnclass": "col-md-4",
+        "columns": [
+            { "content": "<h4>About</h4><p>We teach things.</p>" }
+        ],
+        "hassocial": true,
+        "socialicons": [
+            { "name": "github", "url": "https://github.com/example", "icon": "fa-brands fa-github", "label": "GitHub" }
+        ],
+        "footnote": "<p>&copy; 2026 Example Institute</p>"
+    }
+}}
+<div class="lovely-footer d-print-none">
+    <div class="container-fluid lovely-footer-inner">
+        {{#hascolumns}}
+            <div class="row g-4 lovely-footer-columns">
+                {{#columns}}
+                    <div class="{{columnclass}} lovely-footer-column">
+                        {{{content}}}
+                    </div>
+                {{/columns}}
+            </div>
+        {{/hascolumns}}
+        {{#hassocial}}
+            <div class="lovely-footer-social d-flex justify-content-center">
+                {{#socialicons}}
+                    <a class="lovely-footer-social-link" href="{{url}}" title="{{label}}">
+                        <i class="fa {{icon}} fa-fw" aria-hidden="true"></i>
+                        <span class="visually-hidden">{{label}}</span>
+                    </a>
+                {{/socialicons}}
+            </div>
+        {{/hassocial}}
+        {{#footnote}}
+            <div class="lovely-footer-footnote text-center">
+                {{{footnote}}}
+            </div>
+        {{/footnote}}
+    </div>
+</div>

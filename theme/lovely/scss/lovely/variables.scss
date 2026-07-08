@@ -1,0 +1,75 @@
+//
+// Lovely design tokens.
+//
+// This is the single source of truth for the palette used throughout the theme. Every colour
+// here has been checked against WCAG AA contrast requirements (4.5:1 for normal text, 3:1 for
+// large text and UI component boundaries) against the backgrounds it is actually used on -
+// see the worked pairs in the comments below.
+//
+// $lovely-primary and $lovely-accent are design-time fallbacks only: in normal operation
+// $primary and $lovely-accent are set from the "Primary colour" / "Secondary colour" admin
+// settings by theme_lovely_get_pre_scss(), which runs before this file.
+//
+
+// Primary - a deep, calm teal-indigo. Distinctive without being loud.
+$lovely-primary-900: #0f2e38 !default; // Headings/dark accents. 12.1:1 on white.
+$lovely-primary-800: #153f4c !default; // Navbar / footer / login panel background.
+$lovely-primary:      #1b5a6b !default; // Default brand colour. 7.7:1 on white, white text 7.7:1 on it.
+$lovely-primary-600:  #227087 !default; // Hover / lighter interactive state. 5.6:1 on white.
+$lovely-primary-400:  #6fa9b8 !default; // Decorative only (icons, illustration accents).
+$lovely-primary-100:  #dcebee !default; // Light tint background (badges, hovered rows).
+$lovely-primary-50:   #f2f7f8 !default; // Very subtle section background.
+
+// Accent - a warm terracotta used sparingly (badges, active-state underlines, highlights).
+// Deliberately NOT wired to Bootstrap's $secondary (which stays a neutral grey below) so that
+// ordinary "secondary" buttons/badges don't turn orange site-wide.
+$lovely-accent:      #b14a24 !default; // Default accent colour. 5.4:1 on white.
+$lovely-accent-dark: #8f3b1b !default; // Text-on-light variant. 7.5:1 on white.
+$lovely-accent-100:  #f7e4da !default; // Light tint background.
+
+// Warm neutrals - never pure #fff/#000, so the UI reads as considered rather than clinical.
+$lovely-gray-white: #ffffff !default;
+$lovely-gray-100:   #f5f1ea !default; // Subtle section backgrounds, drawer background.
+$lovely-gray-200:   #eae4d9 !default; // Dividers, card borders (decorative).
+$lovely-gray-300:   #dbd3c4 !default; // Slightly stronger borders (navbar underline).
+$lovely-gray-400:   #c2b8a3 !default; // Disabled state, placeholder icons (decorative).
+$lovely-gray-500:   #8f836a !default; // Input borders. 3.7:1 on white, 3.5:1 on body bg (>=3:1).
+$lovely-gray-600:   #7a6f5c !default; // Muted/secondary text. 4.9:1 on white.
+$lovely-gray-700:   #5c5346 !default; // Secondary headings. 7.6:1 on white.
+$lovely-gray-800:   #3c362c !default; // Strong text alternative. 12.0:1 on white.
+$lovely-gray-900:   #241f19 !default; // Body text. 16.3:1 on white.
+$lovely-gray-black: #1a1611 !default;
+
+// Page background: a warm off-white, distinct from pure white so that white cards visibly
+// layer on top of it instead of blending in.
+$lovely-body-bg: #faf7f2 !default;
+
+// Semantic colours, tuned to sit comfortably alongside the primary/accent family rather than
+// clashing with them (no default Bootstrap red/yellow/green).
+$lovely-success: #256b4e !default; // 6.4:1 on white, white text 6.4:1 on it.
+$lovely-info:    #2c7a93 !default; // 4.9:1 on white, white text 4.9:1 on it.
+$lovely-warning: #8a5a17 !default; // 5.9:1 on white, white text 5.9:1 on it (deliberately a
+                                    // deep ochre rather than caution-tape yellow).
+$lovely-danger:  #b3261e !default; // 6.5:1 on white, white text 6.5:1 on it.
+
+// Dark mode flag. theme_lovely_get_pre_scss() flips this to true (and remaps the scales
+// above) when the admin dark-mode toggle is on; partials can @if on it for one-off fixes.
+$lovely-darkmode: false !default;
+
+// Chrome surfaces. Overridable from the "Header background colour" / "Footer background
+// colour" pickers via theme_lovely_get_pre_scss(). Both carry white/light text, so custom
+// values should stay dark. The footer default is a fixed deep teal - deliberately NOT
+// derived from a remappable scale, so it stays dark in dark mode too.
+$lovely-navbar-bg: $lovely-primary-800 !default;
+// Navbar text/icon colour. theme_lovely_get_pre_scss() flips this to a dark ink when the
+// admin picks a light header background (relative-luminance check), so the bar never
+// renders light-on-light again.
+$lovely-navbar-fg: #fff !default;
+$lovely-footer-bg: #122a33 !default;
+
+// Drawer background. Overridable from the "Drawer background colour" picker (which also
+// feeds Boost's own $drawer-bg-color so both drawer generations agree).
+$lovely-drawer-bg: $lovely-gray-100 !default;
+
+// Top bar height (the .lovely-has-topbar page/drawer offsets in topbar.scss depend on it).
+$lovely-topbar-height: 34px !default;

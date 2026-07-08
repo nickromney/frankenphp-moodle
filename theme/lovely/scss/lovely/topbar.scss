@@ -1,0 +1,90 @@
+//
+// Lovely - top bar and navbar behaviour options.
+//
+// The top bar row is rendered INSIDE the fixed navbar element (see templates/navbar.mustache)
+// so it stays attached whether or not the navbar is sticky. The .lovely-has-topbar and
+// .lovely-navbar-unstuck body classes come from core_renderer::body_attributes().
+//
+// Offsets: Boost positions the page and the drawers off $navbar-height
+// (theme_boost/scss/moodle/{navbar,layout,drawer}.scss: `#page { margin-top: $navbar-height }`,
+// `#page.drawers { margin-top: $navbar-height }`, `.drawer { top: $navbar-height; ... }`).
+// When the top bar adds $lovely-topbar-height to the fixed header, every one of those offsets
+// is re-asserted below with a body-class-prefixed selector - higher specificity than Boost's
+// originals, so cascade order doesn't matter (the login-background lesson, applied here).
+//
+
+.lovely-topbar {
+    height: $lovely-topbar-height;
+    padding: 0 1rem;
+    gap: 1.25rem;
+    font-size: 0.8125rem;
+    // Deepens whatever the navbar background is; over the default teal this reads as a
+    // primary-900 strip (the previous 0.22 washed out grey over light backgrounds).
+    background-color: rgba(#000, 0.28);
+
+    .lovely-topbar-contact,
+    .lovely-topbar-actions {
+        gap: 1.25rem;
+    }
+
+    .lovely-topbar-item,
+    .lovely-topbar-social {
+        color: rgba($lovely-navbar-fg, 0.9);
+        text-decoration: none;
+
+        .fa {
+            margin-right: 0.35rem;
+        }
+
+        &:hover,
+        &:focus {
+            color: $lovely-navbar-fg;
+            text-decoration: underline;
+        }
+    }
+
+    .lovely-topbar-social .fa {
+        margin-right: 0;
+    }
+}
+
+// The top bar is hidden below md (d-none d-md-flex in the template), so the taller-header
+// offsets only apply from md up.
+@include media-breakpoint-up(md) {
+    body.lovely-has-topbar {
+        // Boost: .navbar.fixed-top { height: $navbar-height + 1px; } - two rows now.
+        .navbar.fixed-top {
+            height: auto;
+            flex-wrap: wrap;
+
+            > .container-fluid {
+                min-height: $navbar-height;
+            }
+        }
+
+        // Boost: #page { margin-top: $navbar-height; } (navbar.scss) and
+        // #page.drawers { margin-top: $navbar-height; } (layout.scss).
+        #page,
+        #page.drawers {
+            margin-top: calc(#{$navbar-height} + #{$lovely-topbar-height});
+        }
+
+        // Boost: .drawer { top: $navbar-height; height: calc(100% - #{$navbar-height}); }
+        // (drawer.scss, plus 100vh variants for .drawer-left/right at lg).
+        .drawer,
+        .drawer-left,
+        .drawer-right {
+            top: calc(#{$navbar-height} + #{$lovely-topbar-height});
+            height: calc(100% - #{$navbar-height} - #{$lovely-topbar-height});
+        }
+    }
+}
+
+// Sticky navbar off: the header scrolls away with the page. position: absolute keeps it at
+// the very top of the document (page margins/offsets are unchanged) instead of pinned to the
+// viewport.
+body.lovely-navbar-unstuck {
+    .navbar.fixed-top {
+        position: absolute;
+    }
+}

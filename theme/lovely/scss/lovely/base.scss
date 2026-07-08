@@ -1,0 +1,84 @@
+//
+// Lovely - base polish.
+//
+// Global typography, motion, and focus treatment that applies everywhere, independent of any
+// particular component.
+//
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: $body-bg;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    letter-spacing: -0.01em;
+    color: $lovely-primary-900;
+}
+
+h1, .h1 {
+    letter-spacing: -0.02em;
+}
+
+a {
+    color: $lovely-primary;
+
+    &:hover {
+        color: $lovely-primary-900;
+    }
+}
+
+// Rounded user pictures, same treatment Boost's own preset applies.
+.userpicture {
+    border-radius: 50%;
+}
+
+// A visible, brand-coloured focus ring everywhere, instead of relying on each component to
+// remember to draw one. This never *removes* a browser default outline - it only replaces it
+// with an equally visible, on-brand one.
+:focus-visible {
+    outline: 2px solid $lovely-primary;
+    outline-offset: 2px;
+}
+
+// Text selection in brand colours.
+::selection {
+    background-color: $lovely-primary-100;
+    color: $lovely-primary-900;
+}
+
+// Thin, unobtrusive scrollbars on WebKit/Blink; Firefox gets the standard `scrollbar-*`
+// properties. Both are purely decorative and degrade gracefully where unsupported.
+* {
+    scrollbar-width: thin;
+    scrollbar-color: $lovely-gray-400 transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: $lovely-gray-400;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+// Respect the user's motion preference: collapse every animation/transition to (near) nothing.
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important; /* stylelint-disable-line declaration-no-important */
+        animation-iteration-count: 1 !important; /* stylelint-disable-line declaration-no-important */
+        transition-duration: 0.001ms !important; /* stylelint-disable-line declaration-no-important */
+        scroll-behavior: auto !important; /* stylelint-disable-line declaration-no-important */
+    }
+}

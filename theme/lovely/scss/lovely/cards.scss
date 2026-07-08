@@ -1,0 +1,81 @@
+//
+// Lovely - cards and activity surfaces.
+//
+// Bootstrap's `.card` already picks up $card-border-radius / $card-border-color / $box-shadow
+// from the variable overrides in preset/default.scss. This file adds the layered-shadow,
+// hover-lift treatment used by course cards on the dashboard/course overview, activity cards,
+// and the classic course listing (`.coursebox`), all of which build on top of `.card` or a
+// close cousin of it.
+//
+
+.card {
+    box-shadow: $box-shadow-sm;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+    .card-header {
+        background-color: $card-cap-bg;
+        border-bottom-color: $lovely-gray-200;
+        font-weight: 600;
+    }
+
+    .card-footer {
+        background-color: $white;
+        border-top-color: $lovely-gray-200;
+    }
+}
+
+// A gentle hover-lift for clickable cards (course cards, activity cards). `<a>` wrappers and
+// cards carrying `.clickable-card`/`.dashboard-card` all qualify; plain informational cards
+// (without a link) simply won't be hovered as an interactive unit so this is inert for them.
+a.card:hover,
+a.card:focus,
+.card.clickable-card:hover,
+.card.dashboard-card:hover {
+    box-shadow: $box-shadow;
+    transform: translateY(-2px);
+}
+
+// Classic course listing (category browse, search results) - theme_boost/scss/moodle/courselisting.scss
+// defines `.coursebox` with a hairline border; give it the same soft-card treatment.
+.coursebox {
+    background-color: $white;
+    box-shadow: $box-shadow-sm;
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+        box-shadow: $box-shadow;
+    }
+
+    > .info > .coursename a {
+        font-weight: 600;
+        color: $lovely-primary-900;
+    }
+}
+
+// Activity icons: soften the default square container into a rounded tile, consistent with
+// the theme's overall corner radius.
+.activityiconcontainer {
+    border-radius: $border-radius-sm;
+
+    &.courseicon {
+        border-radius: 50%;
+    }
+}
+
+// Badges/pills: consistent pill radius already comes from $badge-border-radius, but bump the
+// font-weight down slightly so pills feel calmer next to the heavier heading weight.
+.badge {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+// Progress bars - rounded to match the rest of the geometry, and a touch taller so the
+// percentage-complete affordance on course cards is easy to read at a glance.
+.progress {
+    border-radius: 999px;
+    background-color: $lovely-gray-200;
+}
+
+.progress-bar {
+    background-color: $lovely-primary;
+}

@@ -1,0 +1,36 @@
+//
+// Lovely - tables.
+//
+// Border colour and striping tint already come from $table-border-color / $table-striped-bg-factor
+// in preset/default.scss. This adds header treatment and row-hover polish for both the
+// Bootstrap `.table` component and Moodle's own `.generaltable`.
+//
+
+.table,
+.generaltable {
+    thead th {
+        color: $lovely-primary-900;
+        font-weight: 600;
+        border-bottom-width: 2px;
+        background-color: $lovely-gray-100;
+    }
+}
+
+.table {
+    tbody tr:hover {
+        background-color: $lovely-primary-50;
+    }
+}
+
+.generaltable {
+    border-radius: $border-radius-sm;
+    overflow: hidden;
+
+    tbody tr:hover {
+        background-color: $lovely-primary-50;
+    }
+}
+
+.table-hover > tbody > tr:hover > * {
+    --#{$prefix}table-accent-bg: #{$lovely-primary-50};
+}
