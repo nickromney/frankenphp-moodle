@@ -32,7 +32,7 @@ baseline: ## Build, install, and verify the FrankenPHP Moodle baseline
 
 .PHONY: test-smoke-bats
 test-smoke-bats: ## Run smoke BATS tests
-	@bats tests/bats/test_moodle_release_pin.bats tests/bats/test_verify_moodle.bats
+	@bats tests/bats/test_moodle_release_pin.bats tests/bats/test_verify_moodle.bats tests/bats/test_theme_lovely.bats
 
 .PHONY: test-integration-bats
 test-integration-bats: ## Run the end-to-end FrankenPHP baseline BATS test
