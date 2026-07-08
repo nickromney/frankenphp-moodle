@@ -1,0 +1,372 @@
+//
+// Lovely - front page: hero slider, marketing spots, and listing presentation toggles.
+//
+// The hero and marketing sections are rendered by layout/frontpage.php between the navbar
+// and the main content area. The .lovely-coursecards / .lovely-categorycards /
+// .lovely-newsblog body classes come from the same layout file's settings toggles, so all of
+// the restyling below is scoped to the front page and inert everywhere else.
+//
+
+//
+// Hero slider. Rendered as a rounded banner inside #page's padded area (Boost pads
+// #page.drawers responsively and per drawer state, so a "full bleed" negative-margin hack
+// would fight four different paddings; a rounded banner is robust and looks deliberate).
+//
+.lovely-hero {
+    margin-top: 0.5rem;
+
+    .carousel,
+    .carousel-inner,
+    .lovely-hero-static {
+        border-radius: $border-radius-lg;
+        overflow: hidden;
+    }
+
+    .carousel-item {
+        position: relative;
+        overflow: hidden;
+    }
+
+    // Image layer (separate from the item so the zoom transition can scale it without
+    // scaling captions/controls).
+    .lovely-hero-bg {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+    }
+
+    // Optional per-slide ambient video (muted/looping; played by theme_lovely/motion only
+    // without prefers-reduced-motion - the slide image is poster and static fallback).
+    .lovely-hero-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    // Legibility scrim. Strengthened after visual QA: the previous light gradient left
+    // headings unreadable over mid-tone imagery.
+    .lovely-hero-shade {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(15, 46, 56, 0.3) 0%, rgba(15, 46, 56, 0.45) 55%, rgba(15, 46, 56, 0.82) 100%);
+    }
+
+    // Pause/play control for autoplaying media (WCAG 2.2.2). `right` is physical on
+    // purpose - the RTL flipper mirrors it.
+    .lovely-hero-pause {
+        position: absolute;
+        bottom: 0.75rem;
+        right: 0.75rem;
+        z-index: 3;
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        background-color: rgba(15, 46, 56, 0.55);
+
+        &:hover,
+        &:focus {
+            color: #fff;
+            background-color: rgba(15, 46, 56, 0.8);
+        }
+
+        .lovely-hero-play-icon {
+            display: none;
+        }
+
+        &[data-lovely-state="paused"] {
+            .lovely-hero-pause-icon {
+                display: none;
+            }
+
+            .lovely-hero-play-icon {
+                display: inline-block;
+            }
+        }
+    }
+
+    // Caption block gets its own translucent backdrop so text stays readable over any
+    // image (the full-slide scrim alone was not enough on light imagery - verified
+    // visually).
+    .carousel-caption {
+        text-align: start;
+        left: 5%;
+        right: auto;
+        bottom: 10%;
+        z-index: 2;
+        max-width: min(44rem, 88%);
+        padding: 1.25rem 1.5rem;
+        border-radius: $border-radius;
+        background-color: rgba(15, 46, 56, 0.55);
+        backdrop-filter: blur(4px);
+    }
+
+    .lovely-hero-heading {
+        color: #fff;
+        font-size: calc(1.4rem + 1.2vw);
+        letter-spacing: -0.02em;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        margin-bottom: 0.5rem;
+    }
+
+    .lovely-hero-caption {
+        color: rgba(#fff, 0.92);
+        font-size: 1.125rem;
+        max-width: 44rem;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .lovely-hero-cta {
+        margin-top: 0.5rem;
+    }
+
+    .lovely-hero-static {
+        background-image: linear-gradient(160deg, #153f4c 0%, #1b5a6b 65%, #227087 100%);
+
+        .lovely-hero-heading {
+            padding: 2rem;
+            text-align: center;
+        }
+    }
+
+    .carousel-indicators button {
+        border-radius: 999px;
+        width: 24px;
+        height: 4px;
+    }
+
+    // Bootstrap's prev/next hotspots default to 15% of the slide width, which overlapped the
+    // caption card (the prev chevron rendered on top of the heading - verified visually).
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 4.5rem;
+    }
+}
+
+// "Fade with slow zoom" transition: a restrained Ken Burns on the active slide's image
+// layer only (captions stay still). Scoped to the .lovely-hero-zoom carousel class.
+.lovely-hero-zoom .carousel-item.active .lovely-hero-bg {
+    animation: lovely-kenburns 9s ease-out forwards;
+}
+
+@keyframes lovely-kenburns {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.08);
+    }
+}
+
+// The carousel slide/fade animation is Bootstrap's; freeze everything for reduced motion
+// (the global reduce block in base.scss also collapses these, this is belt and braces).
+@media (prefers-reduced-motion: reduce) {
+    .lovely-hero .carousel-item {
+        transition: none;
+    }
+
+    .lovely-hero-zoom .carousel-item.active .lovely-hero-bg {
+        animation: none;
+    }
+}
+
+//
+// Marketing spots.
+//
+.lovely-marketing {
+    margin-top: 1.5rem;
+
+    .lovely-marketing-spot {
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+        .card-body {
+            padding: 1.75rem 1.5rem;
+        }
+    }
+
+    .lovely-marketing-linked:hover,
+    .lovely-marketing-linked:focus-within {
+        box-shadow: $box-shadow;
+        transform: translateY(-2px);
+    }
+
+    .lovely-marketing-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 50%;
+        background-color: $lovely-primary-100;
+        color: $primary;
+        font-size: 1.375rem;
+        margin-bottom: 1rem;
+    }
+
+    .lovely-marketing-heading a {
+        color: $lovely-primary-900;
+        text-decoration: none;
+
+        &:hover,
+        &:focus {
+            color: $primary;
+        }
+    }
+
+    .lovely-marketing-text {
+        color: $lovely-gray-600;
+    }
+}
+
+//
+// Available courses as cards (toggle). Restyles the classic .coursebox list that
+// theme_boost/scss/moodle/courselisting.scss lays out, front page only.
+//
+body.lovely-frontpage.lovely-coursecards {
+    #frontpage-available-course-list .courses,
+    #frontpage-course-list .courses {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+        gap: 1.25rem;
+
+        > .paging {
+            grid-column: 1 / -1;
+        }
+
+        .coursebox {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            border-radius: $card-border-radius;
+            background-color: $white;
+            box-shadow: $box-shadow-sm;
+            overflow: hidden;
+            transition: box-shadow 0.2s ease;
+
+            &:hover {
+                box-shadow: $box-shadow;
+            }
+
+            > .info {
+                padding: 1rem 1.25rem 0.25rem;
+            }
+
+            > .content {
+                display: flex;
+                flex-direction: column;
+                padding: 0 1.25rem 1.25rem;
+            }
+
+            // Course image becomes a full-width banner at the top of the card. Moodle wraps
+            // the image in a .d-flex row inside .content (verified against the served
+            // markup), so the reorder targets that wrapper; the image rule's specificity
+            // intentionally exceeds Boost's
+            // `.coursebox .content .courseimage img { max-width: 100px }`.
+            > .content > .d-flex {
+                order: -1;
+                display: block !important; /* stylelint-disable-line declaration-no-important */
+                margin: 0 -1.25rem 0.75rem;
+            }
+
+            .content .courseimage {
+                width: 100%;
+                margin: 0;
+
+                img {
+                    display: block;
+                    width: 100%;
+                    max-width: 100%;
+                    max-height: none;
+                    height: 8.5rem;
+                    object-fit: cover;
+                }
+            }
+        }
+    }
+}
+
+//
+// Course categories as cards (toggle). Grids the top level of the category tree only;
+// expanded subcategories/courses render inside their parent card.
+//
+body.lovely-frontpage.lovely-categorycards {
+    // Matches the .course_category_tree rendered by both the "List of categories"
+    // (#frontpage-category-names) and "Combo list" (#frontpage-category-combo) sections.
+    .course_category_tree > .content > .subcategories {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+        gap: 1rem;
+
+        > .category {
+            margin: 0;
+            padding: 1rem 1.25rem;
+            border-radius: $card-border-radius;
+            background-color: $white;
+            box-shadow: $box-shadow-sm;
+            transition: box-shadow 0.2s ease;
+
+            &:hover {
+                box-shadow: $box-shadow;
+            }
+
+            > .info > .categoryname {
+                font-weight: 600;
+
+                a {
+                    color: $lovely-primary-900;
+
+                    &:hover,
+                    &:focus {
+                        color: $primary;
+                    }
+                }
+            }
+        }
+    }
+}
+
+//
+// Blog-style site announcements (toggle). Card-ifies the news forum posts on the front page.
+//
+body.lovely-frontpage.lovely-newsblog {
+    .sitetopic .forumpost,
+    #site-news-forum .forumpost {
+        border: 0;
+        border-radius: $card-border-radius;
+        background-color: $white;
+        box-shadow: $box-shadow-sm;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+
+        .topic {
+            border-bottom: 1px solid $lovely-gray-200;
+            padding-bottom: 0.75rem;
+            margin-bottom: 0.75rem;
+
+            .subject {
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: $lovely-primary-900;
+            }
+        }
+    }
+}
+
+//
+// Activity previous/next navigation (core since Moodle 4.0) - styled here, works everywhere.
+//
+.activity-navigation {
+    .btn,
+    a.btn {
+        border-radius: $btn-border-radius;
+        font-weight: 600;
+    }
+}

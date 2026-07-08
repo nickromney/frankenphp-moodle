@@ -1,0 +1,191 @@
+//
+// Lovely - default preset.
+//
+// Structured exactly like theme_boost/scss/preset/default.scss: Moodle Design System tokens,
+// then Bootstrap variable overrides (colours, type, radius, shadows), then FontAwesome +
+// Bootstrap + core Moodle SCSS, then our own component polish.
+//
+// $primary and $lovely-accent are usually already set by this point (theme_lovely_get_pre_scss()
+// injects them from the brand/secondary colour pickers before this file compiles), so the
+// assignments below are !default fallbacks for when a preset file is used stand-alone.
+//
+
+// Import Moodle Design System tokens. Must come before Bootstrap variables, same as Boost.
+@import "design-system";
+
+// Prefix for all CSS custom properties.
+$prefix: bs- !default;
+
+//
+// Colour palette - warm neutrals instead of clinical greys, a deep teal-indigo primary,
+// and a restrained terracotta accent. See theme/lovely/scss/lovely/variables.scss for the
+// full annotated scale (tints used by our own component partials).
+//
+@import "lovely/variables";
+
+$white:    $lovely-gray-white !default;
+$gray-100: $lovely-gray-100 !default;
+$gray-200: $lovely-gray-200 !default;
+$gray-300: $lovely-gray-300 !default;
+$gray-400: $lovely-gray-400 !default;
+$gray-500: $lovely-gray-500 !default;
+$gray-600: $lovely-gray-600 !default;
+$gray-700: $lovely-gray-700 !default;
+$gray-800: $lovely-gray-800 !default;
+$gray-900: $lovely-gray-900 !default;
+$black:    $lovely-gray-black !default;
+
+$primary:   $lovely-primary !default;
+// $lovely-gray-600, not -500: as Bootstrap's $secondary this becomes button/badge/link text in
+// its own right (.btn-outline-secondary, .text-secondary), which needs the 4.5:1 text contrast
+// ratio, not just the 3:1 a decorative border would need. -500 stays reserved for input borders.
+$secondary: $lovely-gray-600 !default;
+$success:   $lovely-success !default;
+$info:      $lovely-info !default;
+$warning:   $lovely-warning !default;
+$danger:    $lovely-danger !default;
+$light:     $lovely-gray-100 !default;
+$dark:      $lovely-gray-900 !default;
+
+// stylelint-disable
+$theme-colors: () !default;
+$theme-colors: map-merge((
+    "primary":    $primary,
+    "secondary":  $secondary,
+    "success":    $success,
+    "info":       $info,
+    "warning":    $warning,
+    "danger":     $danger,
+    "light":      $light,
+    "dark":       $dark
+), $theme-colors);
+// stylelint-enable
+
+// Body / links.
+$body-bg: $lovely-body-bg !default;
+$body-color: $lovely-gray-900 !default;
+$link-decoration: none !default;
+$link-hover-decoration: underline !default;
+
+// Spacers - same 8-step scale Boost uses; it's already sensible. Defined early because the
+// typography and geometry sections below reference $spacer.
+$spacer: 1rem !default;
+$spacers: (
+    0: 0,
+    1: ($spacer * .25),
+    2: ($spacer * .5),
+    3: $spacer,
+    4: ($spacer * 1.5),
+    5: ($spacer * 2),
+    6: ($spacer * 3)
+) !default;
+
+//
+// Typography - a system font stack (no external font requests), a slightly larger base
+// line-height for comfortable reading, and tightened, heavier headings for clearer hierarchy.
+//
+$font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !default;
+$font-size-base: 1rem !default;
+$line-height-base: 1.6 !default;
+
+$headings-font-weight: 600 !default;
+$headings-line-height: 1.25 !default;
+$headings-margin-bottom: $spacer * 0.75 !default;
+
+$h1-font-size: $font-size-base * 2.5 !default;   // 40px
+$h2-font-size: $font-size-base * 2 !default;     // 32px
+$h3-font-size: $font-size-base * 1.625 !default; // 26px
+$h4-font-size: $font-size-base * 1.375 !default; // 22px
+$h5-font-size: $font-size-base * 1.125 !default; // 18px
+$h6-font-size: $font-size-base !default;         // 16px
+
+$small-font-size: 0.875em !default;
+
+//
+// Geometry - consistent, slightly generous border-radius and soft layered shadows instead of
+// hard borders.
+//
+$border-radius-sm: 0.5rem !default;
+$border-radius: 0.625rem !default;
+$border-radius-lg: 0.875rem !default;
+$border-radius-xl: 1.25rem !default;
+$border-color: $lovely-gray-200 !default;
+
+$box-shadow-sm: 0 1px 2px rgba($lovely-primary-900, 0.06) !default;
+$box-shadow: 0 4px 12px rgba($lovely-primary-900, 0.08), 0 2px 4px rgba($lovely-primary-900, 0.04) !default;
+$box-shadow-lg: 0 20px 40px rgba($lovely-primary-900, 0.16), 0 8px 20px rgba($lovely-primary-900, 0.08) !default;
+
+$btn-border-radius: $border-radius-sm !default;
+$btn-border-radius-sm: 0.4375rem !default;
+$btn-border-radius-lg: $border-radius !default;
+$btn-focus-box-shadow: 0 0 0 0.2rem rgba($lovely-primary, 0.35) !default;
+$btn-font-weight: 600 !default;
+
+$input-border-radius: $border-radius-sm !default;
+$input-border-color: $lovely-gray-500 !default;
+$input-focus-border-color: $lovely-primary !default;
+$input-focus-box-shadow: 0 0 0 0.2rem rgba($lovely-primary, 0.25) !default;
+$form-check-input-border: 1px solid $lovely-gray-500 !default;
+
+$card-border-radius: $border-radius-lg !default;
+$card-border-color: $lovely-gray-200 !default;
+$card-cap-bg: $white !default;
+$card-group-margin: 0.25rem !default;
+
+$dropdown-border-radius: $border-radius !default;
+$dropdown-box-shadow: $box-shadow !default;
+$dropdown-link-hover-color: $white !default;
+$dropdown-link-hover-bg: $primary !default;
+
+$popover-max-width: 320px !default;
+$popover-border-radius: $border-radius !default;
+$popover-box-shadow: $box-shadow-lg !default;
+
+$modal-content-border-radius: $border-radius-lg !default;
+$modal-content-box-shadow-xs: $box-shadow-lg !default;
+
+$badge-border-radius: 999px !default;
+$badge-font-weight: 600 !default;
+
+$breadcrumb-padding-y: 0.5rem !default;
+$breadcrumb-margin-bottom: 0 !default;
+
+$table-border-color: $lovely-gray-200 !default;
+$table-striped-bg-factor: 0.035 !default;
+
+$hr-opacity: 0.15 !default;
+
+$focus-ring-color: rgba($lovely-primary, 0.4) !default;
+$focus-ring-opacity: 0.75 !default;
+
+// Behat site specific variable values.
+$behatsite: false !default;
+$enable-transitions: not $behatsite !default;
+$enable-smooth-scroll: not $behatsite !default;
+
+// Import FontAwesome.
+@import "fontawesome";
+
+// Import All of Bootstrap.
+@import "bootstrap";
+
+// Import Core moodle CSS.
+@import "moodle";
+
+//
+// Lovely component polish - deliberately kept until after Bootstrap/Moodle so it can safely
+// extend and override without fighting the cascade.
+//
+@import "lovely/base";
+@import "lovely/navigation";
+@import "lovely/topbar";
+@import "lovely/cards";
+@import "lovely/forms";
+@import "lovely/tables";
+@import "lovely/frontpage";
+@import "lovely/variants";
+@import "lovely/enrol";
+@import "lovely/login";
+@import "lovely/footer";

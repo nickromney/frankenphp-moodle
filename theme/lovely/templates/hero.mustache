@@ -1,0 +1,136 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template theme_lovely/hero
+
+    Front page hero slider (original theme_lovely template). Uses the Bootstrap 5 carousel
+    bundled with Moodle 5.2's Boost theme; touch/swipe, autoplay, and controls all come from
+    Bootstrap's data API. Slides may carry an optional muted looping video layered over the
+    slide image (the image doubles as poster and reduced-motion fallback); videos carry no
+    autoplay attribute - theme_lovely/motion plays them only when the visitor does not prefer
+    reduced motion, and the pause button stops both the carousel and the videos (WCAG 2.2.2).
+    With no image slides configured, renders a static brand-gradient hero with the site name.
+
+    Context variables required for this template:
+    * hasslides - whether any slides have images
+    * slides - array of slide data: imageurl, videourl, videoposter, heading, caption,
+               cta (label, url), hascaption, first, index
+    * multiple - more than one slide (controls/indicators only make sense then)
+    * interval - autoplay interval in milliseconds
+    * transitionclass - empty, carousel-fade, or carousel-fade lovely-hero-zoom
+    * hasmedia - true when the carousel autoplays or any slide has a video (pause button shows)
+    * sitename - site full name for the static fallback hero
+
+    Example context (json):
+    {
+        "hasslides": true,
+        "multiple": false,
+        "interval": 6000,
+        "transitionclass": "",
+        "hasmedia": false,
+        "sitename": "Moodle",
+        "slides": [
+            {
+                "imageurl": "https://example.com/slide.jpg",
+                "videourl": null,
+                "videoposter": "https://example.com/slide.jpg",
+                "heading": "Welcome",
+                "caption": "Learn with us",
+                "cta": { "label": "Browse courses", "url": "https://example.com/courses" },
+                "hascaption": true,
+                "first": true,
+                "index": 0
+            }
+        ]
+    }
+}}
+<section class="lovely-hero d-print-none" aria-label="{{#str}} heroheading, theme_lovely {{/str}}">
+    {{#hasslides}}
+        <div id="lovely-hero-carousel" class="carousel slide {{transitionclass}}"
+                {{#multiple}}data-bs-ride="carousel" data-bs-interval="{{interval}}" data-bs-touch="true"{{/multiple}}>
+            {{#multiple}}
+                <div class="carousel-indicators">
+                    {{#slides}}
+                        <button type="button" data-bs-target="#lovely-hero-carousel" data-bs-slide-to="{{index}}"
+                            {{#first}}class="active" aria-current="true"{{/first}}
+                            aria-label="{{#str}} slideimage, theme_lovely, {{index}} {{/str}}"></button>
+                    {{/slides}}
+                </div>
+            {{/multiple}}
+            <div class="carousel-inner">
+                {{#slides}}
+                    <div class="carousel-item {{#first}}active{{/first}}" role="group" aria-roledescription="slide">
+                        <div class="lovely-hero-bg" style="background-image: url('{{imageurl}}');"></div>
+                        {{#videourl}}
+                            <video class="lovely-hero-video" muted loop playsinline preload="metadata"
+                                   {{#videoposter}}poster="{{videoposter}}"{{/videoposter}}
+                                   data-lovely-autoplay="1" aria-hidden="true" tabindex="-1">
+                                <source src="{{videourl}}">
+                            </video>
+                        {{/videourl}}
+                        <div class="lovely-hero-shade"></div>
+                        {{#hascaption}}
+                            <div class="carousel-caption">
+                                {{#heading}}<h2 class="lovely-hero-heading">{{heading}}</h2>{{/heading}}
+                                {{#caption}}<p class="lovely-hero-caption">{{caption}}</p>{{/caption}}
+                                {{#cta}}
+                                    <a class="btn btn-primary btn-lg lovely-hero-cta" href="{{url}}">{{label}}</a>
+                                {{/cta}}
+                            </div>
+                        {{/hascaption}}
+                        {{^hascaption}}
+                            {{#cta}}
+                                <div class="carousel-caption">
+                                    <a class="btn btn-primary btn-lg lovely-hero-cta" href="{{url}}">{{label}}</a>
+                                </div>
+                            {{/cta}}
+                        {{/hascaption}}
+                    </div>
+                {{/slides}}
+            </div>
+            {{#multiple}}
+                <button class="carousel-control-prev" type="button" data-bs-target="#lovely-hero-carousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">{{#str}} previous, core {{/str}}</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#lovely-hero-carousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">{{#str}} next, core {{/str}}</span>
+                </button>
+            {{/multiple}}
+            {{#hasmedia}}
+                <button type="button" class="lovely-hero-pause btn" data-lovely-state="playing"
+                        aria-label="{{#str}} heroplaypause, theme_lovely {{/str}}" aria-pressed="false">
+                    <i class="fa fa-pause lovely-hero-pause-icon" aria-hidden="true"></i>
+                    <i class="fa fa-play lovely-hero-play-icon" aria-hidden="true"></i>
+                </button>
+            {{/hasmedia}}
+        </div>
+        {{#hasmedia}}
+            {{#js}}
+require(['theme_lovely/motion'], function(Motion) {
+    Motion.init();
+});
+            {{/js}}
+        {{/hasmedia}}
+    {{/hasslides}}
+    {{^hasslides}}
+        <div class="lovely-hero-static d-flex align-items-center justify-content-center">
+            <h2 class="lovely-hero-heading">{{{sitename}}}</h2>
+        </div>
+    {{/hasslides}}
+</section>

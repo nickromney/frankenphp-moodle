@@ -89,6 +89,52 @@ Browsers with their own trust store, such as Firefox, may still need the exporte
 
 `make baseline` runs the same compose stack and then verifies the running site and database state.
 
+## Themes
+
+This repository bundles a custom theme, [`theme/lovely`](theme/lovely), a Boost child theme
+(component `theme_lovely`) with a calmer palette, softer geometry, and a polished login page,
+plus a configurable site-home hero slider (up to 16 slides, optional per-slide video,
+slide/fade/zoom transitions) and marketing spots, boxed or wide page layout with page
+background image, a top bar and header layout variants, a themed footer (content columns,
+social icons, footnote, scroll-to-top), site-wide dark mode, locally bundled fonts (Inter,
+Source Sans 3, Lora - no CDN requests, OFL-licensed files ship in the theme), custom font
+uploads, course image header banners, activity icon style variants, a modal login, login form
+position variants, and login background slideshow or video. All options live under
+*Site administration > Appearance > Themes > Lovely*. The theme targets verifiable feature
+parity with the commercial "Lambda" theme; the honest feature-by-feature matrix (including
+what is deliberately different or out of scope) is in
+[docs/theme-lovely-lambda-parity.md](docs/theme-lovely-lambda-parity.md).
+
+The theme is copied into the image at `/app/public/public/theme/lovely` during the Docker build
+(see the `COPY theme/lovely ...` line in the [`Dockerfile`](Dockerfile)) and is set as the
+site's default theme on container start via the `MOODLE_THEME` environment variable (default:
+`lovely`):
+
+```bash
+MOODLE_THEME=lovely docker compose up -d --build
+```
+
+Set `MOODLE_THEME=boost` (or `classic`) to fall back to a stock theme instead. On every start
+the entrypoint first runs `php admin/cli/upgrade.php --non-interactive` (so plugins shipped by a
+rebuilt image, such as the bundled theme, are registered on existing installs), then applies
+`MOODLE_THEME` with `php admin/cli/cfg.php --name=theme --set=...` followed by
+`php admin/cli/purge_caches.php` - but only when the value names a theme that actually exists in
+the image and differs from the current one. Changing the variable and restarting the stack
+(`docker compose up -d`, no rebuild needed) is enough to switch themes on an existing install; a
+typo'd theme name logs a warning and leaves the current theme untouched.
+
+To iterate on the theme itself:
+
+1. Edit files under `theme/lovely/`.
+2. Rebuild the image so the new files are copied in: `docker compose up -d --build`.
+3. Purge caches so Moodle recompiles the theme's SCSS:
+   `docker compose exec app php admin/cli/purge_caches.php`.
+4. For faster iteration while editing SCSS, turn on **Theme designer mode**
+   (Site administration > Appearance > Themes > Theme settings, or
+   `php admin/cli/cfg.php --name=themedesignermode --set=1`) so Moodle recompiles CSS on every
+   request instead of caching it - remember to turn it back off afterwards, it's not for
+   production use.
+
 ## Verification
 
 The repository keeps verification separate from image setup. The shared verifier is:

@@ -1,0 +1,257 @@
+//
+// Lovely - layout and presentation variants.
+//
+// Every variant here is CSS-only, driven by a body class emitted from
+// core_renderer::body_attributes() (boxed layout, header layout, activity icon style,
+// login position). Nothing in this file runs unless its class is present, so the default
+// look is untouched.
+//
+
+//
+// Boxed page layout (body.lovely-boxed).
+//
+// Implementation note: the box is applied to the content column (.main-inner - the same
+// element Boost's own body.limitedwidth caps), the hero/marketing bands, the header
+// contents, and the themed footer contents - NOT to #page itself. Capping #page would fight
+// Boost's drawer open/close margins (#page.drawers.show-drawer-left { margin-left: ... }),
+// which are load-bearing for course editing. This way drawers, RTL, and dark mode behave
+// identically in both layouts, and the page background (General settings) shows around the
+// boxed column.
+//
+$lovely-boxed-width: 1240px !default;
+
+@include media-breakpoint-up(lg) {
+    body.lovely-boxed {
+        #page.drawers .main-inner {
+            max-width: $lovely-boxed-width;
+            box-shadow: $box-shadow;
+        }
+
+        .lovely-hero,
+        .lovely-marketing {
+            // width:100% is load-bearing: #page is a flex column, and auto margins on a flex
+            // item cancel the default stretch - with only absolutely-positioned children the
+            // hero collapsed to width 0 (verified with a live DOM probe).
+            width: 100%;
+            max-width: $lovely-boxed-width;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .navbar.fixed-top > .container-fluid,
+        .lovely-topbar,
+        .lovely-footer-inner {
+            max-width: $lovely-boxed-width + 32px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+}
+
+//
+// Header layout variants.
+//
+
+// Centred logo: the brand is absolutely centred in the bar; primary nav stays at the start,
+// user menu at the end. Centring uses left:0/right:0 + auto margins (fully symmetric), NOT
+// left:50% + translateX(-50%): Moodle's RTL flipper mirrors the offset but not the
+// transform, which would leave the brand off-centre by half its width in RTL.
+body.lovely-header-centered .navbar.fixed-top {
+    > .container-fluid {
+        position: relative;
+    }
+
+    .navbar-brand {
+        position: absolute;
+        left: 0;
+        right: 0;
+        // !important needed: Boost's navbar template puts Bootstrap's m-0 utility
+        // (margin: 0 !important) on the brand, which otherwise defeats the auto centring
+        // (verified visually - the brand sat on top of the primary nav).
+        margin-left: auto !important; /* stylelint-disable-line declaration-no-important */
+        margin-right: auto !important; /* stylelint-disable-line declaration-no-important */
+        width: max-content;
+        max-width: 30%;
+    }
+
+    // Keep the primary navigation clear of the centred brand.
+    .primary-navigation {
+        max-width: 34%;
+        overflow: hidden;
+    }
+}
+
+// Compact: a quieter, denser bar. Deliberately keeps the standard navbar height so none of
+// the page/drawer offset math changes - "compact" is visual weight, not geometry.
+body.lovely-header-compact .navbar.fixed-top {
+    box-shadow: none;
+    border-bottom: 1px solid rgba(#fff, 0.14);
+
+    .navbar-brand {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .nav-link,
+    .login {
+        font-size: 0.875rem;
+    }
+
+    .navbar-brand .logo {
+        max-height: 28px;
+    }
+}
+
+//
+// Activity icon style variants (default rounded tiles live in cards.scss).
+//
+body.lovely-icons-circles .activityiconcontainer {
+    border-radius: 50%;
+}
+
+// Minimal monochrome: every purpose colour collapses to one neutral tile (the purpose
+// classes like .activityiconcontainer.content set background-color at lower specificity).
+// The neutral flips with the palette so the white icon glyphs stay visible in dark mode.
+body.lovely-icons-mono .activityiconcontainer {
+    background-color: if($lovely-darkmode, #435159, $lovely-gray-800);
+    border-radius: $border-radius-sm;
+}
+
+//
+// Login form position variants (classes only emitted on the login page layout).
+//
+
+// Form on the left: reverse the split-screen row. Flex row-reverse mirrors correctly under
+// RTL without any flipper help.
+body.lovely-login-left {
+    #page-content.row {
+        flex-direction: row-reverse;
+    }
+}
+
+// Centred card: hide the brand panel (display utility on it is !important, so this must be
+// too) and centre the form container over the page-level background that
+// theme_lovely_login_background() emits for this variant.
+body.lovely-login-centered {
+    .login-layout-left {
+        display: none !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    // The form column is col-lg-6; with the brand panel hidden it must span the full row or
+    // the card sits left of centre (verified visually).
+    .login-layout-right {
+        flex: 0 0 100%;
+        max-width: 100%;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+    }
+
+    .login-layout-right-content {
+        margin: 0;
+    }
+
+    // Text outside the white form card sits on the dark page background here - the default
+    // dark headings/muted text were unreadable (verified visually). Scope carefully: the
+    // first attempt coloured the whole .login-container and turned the labels INSIDE the
+    // white card white-on-white (also verified visually, the hard way).
+    .login-layout-right-content {
+        color: rgba(#fff, 0.92);
+
+        h1,
+        h2,
+        .h2 {
+            color: #fff;
+        }
+
+        p,
+        .text-muted {
+            // !important: Bootstrap's .text-muted utility is itself !important.
+            color: rgba(#fff, 0.85) !important; /* stylelint-disable-line declaration-no-important */
+        }
+    }
+
+    // Everything inside the white card keeps the normal dark ink.
+    .login-container .login-form {
+        color: $lovely-gray-900;
+
+        .form-label,
+        label {
+            color: $lovely-gray-900;
+        }
+    }
+
+    .login-container .login-cookiesnotice .btn-link {
+        color: rgba(#fff, 0.8);
+
+        &:hover,
+        &:focus {
+            color: #fff;
+        }
+    }
+}
+
+//
+// Course image header banner (markup from core_renderer::full_header()).
+//
+.lovely-course-banner {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    border-radius: $border-radius-lg;
+    overflow: hidden;
+    margin-top: 0.5rem;
+    padding: 1.5rem 1rem 1rem;
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(15, 46, 56, 0.5), rgba(15, 46, 56, 0.75));
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    #page-header {
+        background: transparent;
+
+        h1,
+        .page-header-headings,
+        .breadcrumb,
+        .breadcrumb a,
+        .breadcrumb-item + .breadcrumb-item::before {
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        }
+    }
+}
+
+//
+// Login background video (markup from theme_lovely/login_video via the login template
+// override). Fills the page behind both login panels; panels stack above via z-index.
+//
+body.pagelayout-login {
+    .lovely-login-video-wrap {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        z-index: 0;
+
+        .lovely-login-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    // Keep the login panels above the video.
+    #page-content {
+        position: relative;
+        z-index: 1;
+    }
+}

@@ -1,0 +1,124 @@
+//
+// Lovely - login page.
+//
+// Moodle 5.2's Boost already ships a modern split-screen login (`.login-layout-left` brand
+// panel + `.login-layout-right` form panel - see theme_boost/scss/moodle/login.scss). Rather
+// than replacing that structure, this file: (a) makes sure our own $primary flows through it
+// cleanly, (b) gives the form itself a soft card presence, and (c) polishes the supporting
+// bits (identity provider buttons, separator, stats).
+//
+// theme_lovely_get_extra_scss() (lib.php) unconditionally (re)asserts the actual
+// `background-image` for the login brand panel - either an admin-uploaded image, or our own
+// brand gradient - because Boost's own extrascsscallback would otherwise show its bundled
+// stock photo. It has to both run after Boost's callback AND match its selector specificity
+// (`body.pagelayout-login #page .login-layout-left`); see the comment on
+// theme_lovely_get_extra_scss() for why that has to happen in PHP rather than here. This file
+// only defines the stacking context/z-index the overlay needs, so it's correct either way.
+//
+
+.login-layout-left {
+    position: relative;
+}
+
+.login-layout-left-content {
+    position: relative;
+    z-index: 2;
+    border-radius: $border-radius-lg;
+    box-shadow: 0 8px 30px rgba(#0f2e38, 0.25);
+    backdrop-filter: blur(6px);
+
+    // The global heading colour ($lovely-primary-900, near-black in light mode) is invisible
+    // on this dark panel card - verified visually ("Welcome to Moodle" vanished). Headings in
+    // the panel are always light; the panel background is dark in both light and dark modes.
+    h1, h2, h3, h4, h5, h6 {
+        color: #fff;
+    }
+
+    // Boost computes this panel's background as `darken($primary, 25%)` (moodle/login.scss,
+    // $login-layout-panel-bg - notably declared *without* `!default`, so it can't be overridden
+    // by setting the variable earlier). Because $primary is already a fairly dark teal, a flat
+    // 25-percentage-point HSL darken() crashes it to near-black (`rgba(1, 4, 5, 0.65)`) instead
+    // of a legible tinted panel. Re-declaring the property here, after the fact, is the only way
+    // to fix it without forking login.scss.
+    background-color: rgba($lovely-primary-900, 0.65);
+}
+
+.login-layout-stat-value {
+    font-weight: 700;
+    color: $white;
+}
+
+.login-container {
+    .login-form {
+        background-color: $white;
+        border: 1px solid $lovely-gray-200;
+        border-radius: $border-radius-lg;
+        box-shadow: $box-shadow;
+        padding: $spacer * 1.75;
+
+        @include media-breakpoint-down(sm) {
+            padding: $spacer;
+            border: 0;
+            box-shadow: none;
+        }
+    }
+
+    .login-identityprovider-btn {
+        border-radius: $border-radius-sm;
+        font-weight: 600;
+
+        &:hover,
+        &:focus {
+            border-color: $lovely-primary;
+            color: $lovely-primary-900;
+        }
+    }
+
+    .login-cookiesnotice .btn-link {
+        color: $lovely-gray-600;
+
+        &:hover,
+        &:focus {
+            color: $lovely-primary;
+        }
+    }
+}
+
+// Heading inside the form panel (site name / "Log in").
+.login-layout-right-content h1,
+.login-layout-right-content h2 {
+    color: $lovely-primary-900;
+}
+
+// "Back to site" link (login template fork): stock Boost renders no navbar on the login
+// page, so this is the way home. Sits over the brand panel; `left` is physical - the RTL
+// flipper mirrors it.
+.lovely-login-home {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background-color: rgba(15, 46, 56, 0.55);
+    color: #fff;
+    font-size: 0.875rem;
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+        color: #fff;
+        background-color: rgba(15, 46, 56, 0.8);
+        text-decoration: none;
+    }
+}
+
+// On small screens the brand panel is hidden - keep the link legible on the light form side.
+@include media-breakpoint-down(lg) {
+    .lovely-login-home {
+        background-color: rgba(15, 46, 56, 0.75);
+    }
+}

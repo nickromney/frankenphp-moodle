@@ -1,0 +1,248 @@
+//
+// Lovely - navigation polish.
+//
+// Covers the fixed top navbar, the primary/secondary ("moremenu") navigation strip, the
+// left-hand drawer and course index, and dropdown menus. Selectors are taken from
+// theme_boost/scss/moodle/{navbar,drawer,courseindex,moremenu,primarynavigation}.scss so this
+// rides on top of Boost's own structure rather than re-implementing it.
+//
+
+//
+// Top navbar - a deep teal bar instead of Boost's white-with-hairline default.
+// $lovely-navbar-bg defaults to $lovely-primary-800 and is overridable from the "Header
+// background colour" admin setting. Text uses $lovely-navbar-fg (never $white, which remaps
+// in dark mode): white by default, flipped to dark ink by theme_lovely_get_pre_scss() when
+// the admin picks a light header background.
+//
+.navbar.fixed-top {
+    background-color: $lovely-navbar-bg;
+    border-bottom: 0;
+    box-shadow: $box-shadow-sm;
+
+    .navbar-brand,
+    .nav-link,
+    .divider {
+        color: rgba($lovely-navbar-fg, 0.92);
+    }
+
+    .navbar-brand {
+        font-weight: 700;
+        letter-spacing: -0.01em;
+
+        .sitename {
+            color: $lovely-navbar-fg;
+        }
+    }
+
+    .divider {
+        background-color: rgba($lovely-navbar-fg, 0.18);
+    }
+
+    .nav-link {
+        color: rgba($lovely-navbar-fg, 0.85);
+
+        &:hover,
+        &:focus {
+            color: $lovely-navbar-fg;
+            background-color: rgba($lovely-navbar-fg, 0.1);
+            border-color: transparent;
+        }
+    }
+
+    :focus-visible {
+        outline-color: $lovely-navbar-fg;
+        outline-offset: -2px;
+    }
+
+    .usermenu .dropdown-toggle,
+    .langmenu .dropdown-toggle {
+        &:hover,
+        &:focus {
+            background-color: rgba($lovely-navbar-fg, 0.1);
+        }
+    }
+
+    // Primary navigation lives inside the dark bar: the generic light-surface moremenu
+    // styling (below) rendered the active "Home" item as a floating light chip on the teal
+    // bar - verified visually. Scope bar-appropriate colours here at higher specificity.
+    .moremenu {
+        background-color: transparent;
+        border-bottom: 0;
+
+        .nav-link {
+            color: rgba($lovely-navbar-fg, 0.85);
+
+            &:hover,
+            &:focus {
+                color: $lovely-navbar-fg;
+                background-color: rgba($lovely-navbar-fg, 0.1);
+            }
+
+            &.active {
+                color: $lovely-navbar-fg;
+                background-color: rgba($lovely-navbar-fg, 0.12);
+                border-bottom-color: $lovely-navbar-fg;
+
+                &:hover,
+                &:focus {
+                    background-color: rgba($lovely-navbar-fg, 0.16);
+                    border-bottom-color: $lovely-navbar-fg;
+                }
+            }
+        }
+    }
+
+    .primary-navigation .navigation .nav-link {
+        color: rgba($lovely-navbar-fg, 0.85);
+
+        &:hover,
+        &:focus,
+        &.active {
+            color: $lovely-navbar-fg;
+        }
+    }
+
+    // The guest "Log in" link is a plain anchor inside .login, not a .nav-link.
+    .login,
+    .login a {
+        color: rgba($lovely-navbar-fg, 0.9);
+
+        a:hover,
+        a:focus,
+        &:hover,
+        &:focus {
+            color: $lovely-navbar-fg;
+        }
+    }
+
+    // Core's edit switch (core/editswitch template) renders inside the navbar but styles its
+    // own label: muted form-check-label colour when off, and Bootstrap's `.text-primary`
+    // utility (with !important) when editing is on - both illegible on the dark navbar.
+    // !important is required to out-rank the utility, same story as `.bg-body`/`.m-0`.
+    .editmode-switch-form {
+        .form-check-label {
+            color: rgba($lovely-navbar-fg, 0.85) !important;
+        }
+
+        .text-primary {
+            color: $lovely-navbar-fg !important;
+        }
+    }
+}
+
+// Secondary/"more menu" tab strip sits on a light background below the navbar.
+.moremenu {
+    background-color: $white;
+    border-bottom: 1px solid $lovely-gray-200;
+
+    .nav-link {
+        color: $lovely-gray-700;
+        font-weight: 500;
+
+        &:hover,
+        &:focus {
+            color: $lovely-primary;
+            background-color: $lovely-primary-50;
+        }
+
+        &.active {
+            color: $lovely-primary-900;
+            background-color: $lovely-primary-50;
+            border-bottom-color: $lovely-primary;
+        }
+    }
+}
+
+.primary-navigation .navigation .nav-link {
+    color: $lovely-gray-800;
+    font-weight: 500;
+
+    &:hover,
+    &:focus {
+        color: $lovely-primary;
+    }
+
+    &.active {
+        color: $lovely-primary;
+        border-top-color: $lovely-primary;
+    }
+}
+
+//
+// Drawer + course index.
+//
+[data-region="drawer"],
+.drawer {
+    background-color: $lovely-drawer-bg;
+}
+
+[data-region="drawer"] {
+    box-shadow: $box-shadow;
+}
+
+.drawerheader {
+    .drawerheading {
+        color: $lovely-primary-900;
+        font-weight: 700;
+    }
+}
+
+#nav-drawer .list-group-item,
+[data-region="drawer"] .list-group-item {
+    border-radius: $border-radius-sm;
+    margin-bottom: 2px;
+    border-color: transparent;
+
+    &:hover,
+    &:focus {
+        background-color: $lovely-primary-100;
+    }
+
+    &.active {
+        background-color: $lovely-primary-100;
+        color: $lovely-primary-900;
+        font-weight: 600;
+    }
+}
+
+.courseindex-link {
+    border-radius: $border-radius-sm;
+}
+
+.courseindex-item {
+    &:hover,
+    &:focus-within {
+        .courseindex-link,
+        .courseindex-chevron {
+            color: $lovely-primary;
+        }
+    }
+}
+
+//
+// Dropdown menus everywhere (user menu, language menu, action menus, course index kebabs).
+//
+.dropdown-menu {
+    border: 1px solid $lovely-gray-200;
+    padding: 0.5rem;
+
+    .dropdown-item {
+        border-radius: $border-radius-sm;
+
+        &:hover,
+        &:focus {
+            background-color: $lovely-primary-50;
+            color: $lovely-primary-900;
+        }
+
+        &:active,
+        &.active {
+            background-color: $lovely-primary;
+            color: $white;
+        }
+    }
+
+    .dropdown-divider {
+        border-color: $lovely-gray-200;
+    }
+}

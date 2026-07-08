@@ -105,6 +105,16 @@ function assert_asset_url_serves_ok() {
   fi
 }
 
+function assert_theme_styles_the_page() {
+  local asset_url="$1"
+  local expected_theme="${MOODLE_THEME:-lovely}"
+
+  if [[ "${asset_url}" != *"/theme/styles.php/${expected_theme}/"* ]]; then
+    echo "Error: expected the page to be styled by theme '${expected_theme}', got stylesheet URL: ${asset_url}" >&2
+    return 1
+  fi
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --results-dir)
@@ -191,6 +201,7 @@ javascript_asset_url="$(
 )"
 
 assert_asset_url_serves_ok "theme stylesheet" "${theme_asset_url}"
+assert_theme_styles_the_page "${theme_asset_url}"
 assert_asset_url_serves_ok "javascript bundle" "${javascript_asset_url}"
 
 compose exec -T db sh -lc \
@@ -223,6 +234,7 @@ compose exec -T app sh -lc \
   "! test -L /app/public/config.php"
 
 assert_asset_url_serves_ok "theme stylesheet" "${theme_asset_url}"
+assert_theme_styles_the_page "${theme_asset_url}"
 assert_asset_url_serves_ok "javascript bundle" "${javascript_asset_url}"
 
 if ! "${PROJECT_ROOT}/verify-moodle.sh" \
