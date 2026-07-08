@@ -25,6 +25,7 @@ MOODLE_SITE_SHORTNAME="${MOODLE_SITE_SHORTNAME:-Moodle}"
 MOODLE_ADMIN_USER="${MOODLE_ADMIN_USER:-admin}"
 MOODLE_ADMIN_PASSWORD="${MOODLE_ADMIN_PASSWORD:-Adminpass123!}"
 MOODLE_ADMIN_EMAIL="${MOODLE_ADMIN_EMAIL:-demo@moodle.test}"
+MOODLE_THEME="${MOODLE_THEME:-lovely}"
 
 function info() {
   printf '[entrypoint] %s\n' "$1"
@@ -171,6 +172,38 @@ function install_moodle_if_needed() {
   persist_config_snapshot
 }
 
+function upgrade_moodle_if_needed() {
+  [[ "${MOODLE_AUTO_INSTALL}" == "true" ]] || return 0
+  [[ -f "${MOODLE_CONFIG_FILE}" ]] || return 0
+
+  # A rebuilt image can ship plugins (such as the bundled theme) that an existing database
+  # has never seen; without this, Moodle parks admins on the plugin-check page instead of
+  # the site. No-ops in a few seconds when nothing is pending.
+  wait_for_database
+  info "running Moodle upgrade check"
+  php "${APP_ROOT}/admin/cli/upgrade.php" --non-interactive
+}
+
+function configure_theme() {
+  [[ -f "${MOODLE_CONFIG_FILE}" ]] || return 0
+  [[ -n "${MOODLE_THEME}" ]] || return 0
+
+  if [[ ! -f "${APP_ROOT}/public/theme/${MOODLE_THEME}/config.php" ]]; then
+    info "WARNING: theme '${MOODLE_THEME}' does not exist under ${APP_ROOT}/public/theme; keeping the current theme"
+    return 0
+  fi
+
+  local current_theme
+  current_theme="$(php "${APP_ROOT}/admin/cli/cfg.php" --name=theme 2>/dev/null || true)"
+  if [[ "${current_theme}" == "${MOODLE_THEME}" ]]; then
+    return 0
+  fi
+
+  info "setting default theme to ${MOODLE_THEME}"
+  php "${APP_ROOT}/admin/cli/cfg.php" --name=theme --set="${MOODLE_THEME}"
+  php "${APP_ROOT}/admin/cli/purge_caches.php"
+}
+
 if [[ -z "${MOODLE_SITE_URL}" ]]; then
   MOODLE_SITE_URL="$(default_site_url)"
 fi
@@ -181,6 +214,8 @@ chown -R www-data:www-data "${MOODLE_DATA_ROOT}" "${MOODLE_CONFIG_ROOT}" || true
 restore_persisted_config
 ensure_config_site_url
 install_moodle_if_needed
+upgrade_moodle_if_needed
+configure_theme
 ensure_config_site_url
 persist_config_snapshot
 

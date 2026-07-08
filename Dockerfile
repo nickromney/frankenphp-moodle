@@ -27,6 +27,12 @@ RUN set -eux; \
     composer install --no-dev --optimize-autoloader --no-interaction; \
     rm -f /usr/local/bin/composer
 
+# The bundled "lovely" theme (a Boost child theme, see theme/lovely/). Moodle 5.x's directory
+# layout serves the web root from a public/ subdirectory of the dirroot, so the theme lands at
+# /app/public/public/theme/lovely - verified against the built image with
+# `docker compose run --rm --no-deps app ls /app/public/public/theme`.
+COPY theme/lovely /app/public/public/theme/lovely
+
 RUN printf 'max_input_vars=5000\nmemory_limit=256M\n' > /usr/local/etc/php/conf.d/zz-moodle.ini
 
 COPY docker/Caddyfile /etc/frankenphp/Caddyfile
