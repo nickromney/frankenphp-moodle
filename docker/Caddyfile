@@ -1,6 +1,13 @@
 {
 	skip_install_trust
 
+	# Host 443 is often already taken (for example by Kind). Caddy's default HTTP/3
+	# Alt-Svc header still advertises h3 on :443, which sends browsers to that other
+	# listener instead of the published Moodle port.
+	servers {
+		protocols h1 h2
+	}
+
 	{$CADDY_GLOBAL_OPTIONS}
 
 	frankenphp {

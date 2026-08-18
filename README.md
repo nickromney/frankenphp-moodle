@@ -15,7 +15,7 @@ It is for the container runtime itself: image shape, required PHP extensions, Mo
 The current maintained baseline is:
 
 - FrankenPHP with PHP `8.4`
-- Moodle `5.2.1`
+- Moodle `5.2.2`
 - MariaDB
 - Docker
 - HTTPS on `moodle.docker.test.127.0.0.1.sslip.io`
@@ -47,10 +47,12 @@ The app container keeps the Moodle code under `/app/public` and serves only `/ap
 
 By default the published ports bind only to `127.0.0.1`, not all host interfaces.
 
-Open:
+`make up` waits until HTTPS answers and then runs TLS preflight: it refuses to print a URL whose leaf certificate is expired or within an hour of expiry. Use the URL it prints, including the port when that is not `443`. If something else already owns `127.0.0.1:443` (for example a Kind cluster), `https://moodle.docker.test.127.0.0.1.sslip.io` without a port is that other service, not Moodle.
+
+Open the URL printed by `make up`, for example:
 
 ```bash
-https://moodle.docker.test.127.0.0.1.sslip.io
+https://moodle.docker.test.127.0.0.1.sslip.io:18443
 ```
 
 Default local admin credentials:
@@ -68,7 +70,7 @@ To trust the local Caddy root certificate on the host:
 make trust-local-ca
 ```
 
-If port `80` or `443` is already in use, override the published ports:
+If port `80` or `443` is already in use, `make up` and `make baseline` probe the host first and move to a free loopback port (typically `18080`/`18443`). Raw `docker compose up` still defaults to `80`/`443`; override them if you skip the Make targets:
 
 ```bash
 APP_HTTP_PORT=18080 APP_HTTPS_PORT=18443 docker compose up -d --build

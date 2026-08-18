@@ -4,7 +4,7 @@ FROM composer:2 AS composer-bin
 FROM ${FRANKENPHP_IMAGE}
 
 ARG MOODLE_SERIES=stable502
-ARG MOODLE_VERSION=5.2.1
+ARG MOODLE_VERSION=5.2.2
 ARG MOODLE_PACKAGE_URL=
 ARG MOODLE_PHP_EXTENSIONS="gd intl mysqli pdo_mysql soap zip ldap"
 
@@ -36,9 +36,10 @@ COPY theme/lovely /app/public/public/theme/lovely
 RUN printf 'max_input_vars=5000\nmemory_limit=256M\n' > /usr/local/etc/php/conf.d/zz-moodle.ini
 
 COPY docker/Caddyfile /etc/frankenphp/Caddyfile
+COPY docker/tls-preflight.sh /usr/local/bin/tls-preflight.sh
 COPY docker/entrypoint.sh /usr/local/bin/frankenphp-moodle-entrypoint
 
-RUN chmod 0755 /usr/local/bin/frankenphp-moodle-entrypoint
+RUN chmod 0755 /usr/local/bin/frankenphp-moodle-entrypoint /usr/local/bin/tls-preflight.sh
 
 ENTRYPOINT ["frankenphp-moodle-entrypoint"]
 
