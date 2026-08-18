@@ -151,8 +151,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# shellcheck source=docker/tls-preflight.sh
+source "${PROJECT_ROOT}/docker/tls-preflight.sh"
+
 docker_require
-docker_require_tools awk curl date mktemp sed
+docker_require_tools awk curl date mktemp sed python3 openssl
+
+APP_HTTP_PORT="$(docker_allocate_host_port "${APP_BIND_HOST}" "${APP_HTTP_PORT}")"
+APP_HTTPS_PORT="$(docker_allocate_host_port "${APP_BIND_HOST}" "${APP_HTTPS_PORT}" "${APP_HTTP_PORT}")"
+SITE_URL="$(site_url)"
 
 if [[ -z "${RESULTS_DIR}" ]]; then
   RESULTS_DIR="$(mktemp -d "/tmp/frankenphp-moodle-$(date +%Y%m%d-%H%M%S)-XXXX")"
@@ -185,6 +192,7 @@ fi
 compose up -d
 
 wait_for_http
+tls_preflight_check_url "${SITE_URL}"
 
 compose exec -T app sh -lc \
   "php -i | sed -n '/^max_input_vars =>/p;/^memory_limit =>/p'" | tee "${PHP_SETTINGS_LOG}"
@@ -229,6 +237,7 @@ fi
 
 compose restart app >/dev/null
 wait_for_http
+tls_preflight_check_url "${SITE_URL}"
 
 compose exec -T app sh -lc \
   "! test -L /app/public/config.php"

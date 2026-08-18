@@ -184,6 +184,12 @@ function upgrade_moodle_if_needed() {
   php "${APP_ROOT}/admin/cli/upgrade.php" --non-interactive
 }
 
+function prune_expired_caddy_certs() {
+  # shellcheck source=docker/tls-preflight.sh
+  source /usr/local/bin/tls-preflight.sh
+  tls_preflight_prune_expired_certs /data/caddy/certificates
+}
+
 function configure_theme() {
   [[ -f "${MOODLE_CONFIG_FILE}" ]] || return 0
   [[ -n "${MOODLE_THEME}" ]] || return 0
@@ -210,6 +216,7 @@ fi
 
 install -d -m 0775 -o www-data -g www-data "${MOODLE_DATA_ROOT}" "${MOODLE_CONFIG_ROOT}"
 chown -R www-data:www-data "${MOODLE_DATA_ROOT}" "${MOODLE_CONFIG_ROOT}" || true
+prune_expired_caddy_certs
 
 restore_persisted_config
 ensure_config_site_url

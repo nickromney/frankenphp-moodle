@@ -11,7 +11,7 @@ help: ## Show this help message
 
 .PHONY: up
 up: ## Start the FrankenPHP Moodle stack with Docker Compose
-	@docker compose up -d --build
+	@./tests/docker/compose-up.sh
 
 .PHONY: down
 down: ## Stop the compose stack and remove its volumes
@@ -30,9 +30,13 @@ baseline: ## Build, install, and verify the FrankenPHP Moodle baseline
 	@echo "$(YELLOW)Running FrankenPHP Moodle baseline...$(NC)"
 	@./tests/docker/run-baseline.sh
 
+.PHONY: test-preflight
+test-preflight: ## Run TLS certificate preflight BATS tests
+	@bats tests/bats/test_tls_preflight.bats
+
 .PHONY: test-smoke-bats
 test-smoke-bats: ## Run smoke BATS tests
-	@bats tests/bats/test_moodle_release_pin.bats tests/bats/test_verify_moodle.bats tests/bats/test_theme_lovely.bats
+	@bats tests/bats/test_moodle_release_pin.bats tests/bats/test_verify_moodle.bats tests/bats/test_theme_lovely.bats tests/bats/test_docker_ports.bats tests/bats/test_tls_preflight.bats
 
 .PHONY: test-integration-bats
 test-integration-bats: ## Run the end-to-end FrankenPHP baseline BATS test
