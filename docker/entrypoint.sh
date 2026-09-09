@@ -11,6 +11,7 @@ PERSISTED_CONFIG_FILE="${MOODLE_CONFIG_ROOT}/config.php"
 APP_HTTP_PORT="${APP_HTTP_PORT:-80}"
 APP_HTTPS_PORT="${APP_HTTPS_PORT:-443}"
 MOODLE_HOST="${MOODLE_HOST:-moodle.docker.test.127.0.0.1.sslip.io}"
+MOODLE_WEB_ROOT="${MOODLE_WEB_ROOT:-}"
 MOODLE_AUTO_INSTALL="${MOODLE_AUTO_INSTALL:-true}"
 MOODLE_DB_HOST="${MOODLE_DB_HOST:-db}"
 MOODLE_DB_PORT="${MOODLE_DB_PORT:-3306}"
@@ -194,8 +195,8 @@ function configure_theme() {
   [[ -f "${MOODLE_CONFIG_FILE}" ]] || return 0
   [[ -n "${MOODLE_THEME}" ]] || return 0
 
-  if [[ ! -f "${APP_ROOT}/public/theme/${MOODLE_THEME}/config.php" ]]; then
-    info "WARNING: theme '${MOODLE_THEME}' does not exist under ${APP_ROOT}/public/theme; keeping the current theme"
+  if [[ ! -f "${MOODLE_WEB_ROOT}/theme/${MOODLE_THEME}/config.php" ]]; then
+    info "WARNING: theme '${MOODLE_THEME}' does not exist under ${MOODLE_WEB_ROOT}/theme; keeping the current theme"
     return 0
   fi
 
@@ -209,6 +210,15 @@ function configure_theme() {
   php "${APP_ROOT}/admin/cli/cfg.php" --name=theme --set="${MOODLE_THEME}"
   php "${APP_ROOT}/admin/cli/purge_caches.php"
 }
+
+if [[ -z "${MOODLE_WEB_ROOT}" ]]; then
+  if [[ -d "${APP_ROOT}/public" ]]; then
+    MOODLE_WEB_ROOT="${APP_ROOT}/public"
+  else
+    MOODLE_WEB_ROOT="${APP_ROOT}"
+  fi
+fi
+export MOODLE_WEB_ROOT
 
 if [[ -z "${MOODLE_SITE_URL}" ]]; then
   MOODLE_SITE_URL="$(default_site_url)"

@@ -27,11 +27,21 @@ RUN set -eux; \
     composer install --no-dev --optimize-autoloader --no-interaction; \
     rm -f /usr/local/bin/composer
 
-# The bundled "lovely" theme (a Boost child theme, see theme/lovely/). Moodle 5.x's directory
-# layout serves the web root from a public/ subdirectory of the dirroot, so the theme lands at
-# /app/public/public/theme/lovely - verified against the built image with
-# `docker compose run --rm --no-deps app ls /app/public/public/theme`.
-COPY theme/lovely /app/public/public/theme/lovely
+# The bundled "lovely" theme (a Boost child theme, see theme/lovely/). Moodle 5.0+
+# serves the web root from a public/ subdirectory of the dirroot, while Moodle 4.4
+# serves the dirroot itself. Install the theme in the matching location so either
+# package layout can be built from this Dockerfile.
+COPY theme/lovely /tmp/moodle-theme-lovely
+
+RUN set -eux; \
+    if [ -d /app/public/public ]; then \
+        mkdir -p /app/public/public/theme; \
+        cp -a /tmp/moodle-theme-lovely /app/public/public/theme/lovely; \
+    else \
+        mkdir -p /app/public/theme; \
+        cp -a /tmp/moodle-theme-lovely /app/public/theme/lovely; \
+    fi; \
+    rm -rf /tmp/moodle-theme-lovely
 
 RUN printf 'max_input_vars=5000\nmemory_limit=256M\n' > /usr/local/etc/php/conf.d/zz-moodle.ini
 
