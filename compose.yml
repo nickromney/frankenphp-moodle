@@ -37,6 +37,7 @@ services:
       APP_HTTPS_PORT: ${APP_HTTPS_PORT:-443}
       MOODLE_HOST: ${MOODLE_HOST:-moodle.docker.test.127.0.0.1.sslip.io}
       SERVER_NAME: ${SERVER_NAME:-moodle.docker.test.127.0.0.1.sslip.io}
+      MOODLE_WEB_ROOT: ${MOODLE_WEB_ROOT:-}
       MOODLE_AUTO_INSTALL: ${MOODLE_AUTO_INSTALL:-true}
       MOODLE_SITE_SCHEME: ${MOODLE_SITE_SCHEME:-https}
       MOODLE_SITE_URL: ${MOODLE_SITE_URL:-}

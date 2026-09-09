@@ -15,7 +15,7 @@ It is for the container runtime itself: image shape, required PHP extensions, Mo
 The current maintained baseline is:
 
 - FrankenPHP with PHP `8.4`
-- Moodle `5.2.2`
+- Moodle `5.2.2+` from the `MOODLE_502_STABLE` line
 - MariaDB
 - Docker
 - HTTPS on `moodle.docker.test.127.0.0.1.sslip.io`
@@ -43,7 +43,34 @@ make baseline
 - install Moodle automatically on first boot
 - serve Moodle on `https://moodle.docker.test.127.0.0.1.sslip.io`
 
-The app container keeps the Moodle code under `/app/public` and serves only `/app/public/public`; there is no local Moodle checkout or bind mount required.
+The default download uses Moodle's `stable502` channel with the `5.2.2` package
+name. Moodle publishes point-release fixes on that channel, so this resolves to
+the current `5.2.2+` code rather than the frozen `v5.2.2` tag. Set
+`MOODLE_SERIES=stable502 MOODLE_VERSION=5.2.2` explicitly if you want to make
+that choice visible in an external build.
+
+### Moodle 4.4.2+
+
+Moodle 4.4.2 and later can be built with the same image. Use the 4.4 stable
+channel and PHP 8.3, which is the appropriate runtime for the Moodle 4.4
+support window:
+
+```bash
+FRANKENPHP_IMAGE=dunglas/frankenphp:php8.3-bookworm \
+MOODLE_SERIES=stable404 \
+MOODLE_VERSION=4.4.2 \
+docker compose up -d --build
+```
+
+The Dockerfile detects Moodle's pre-5.0 directory layout and configures Caddy
+and the bundled theme accordingly. Existing Moodle 4.4.2+ sites should be
+upgraded using Moodle's normal upgrade procedure and a backup; this image
+provides the runtime and packaging path, not an automatic database migration.
+
+The app container keeps the Moodle code under `/app/public` and serves the
+package's correct web root (`/app/public/public` for Moodle 5.x and
+`/app/public` for Moodle 4.4); there is no local Moodle checkout or bind mount
+required.
 
 By default the published ports bind only to `127.0.0.1`, not all host interfaces.
 

@@ -18,3 +18,19 @@
   run grep -Fx "        MOODLE_VERSION: \${MOODLE_VERSION:-5.2.2}" compose.yml
   [ "${status}" -eq 0 ]
 }
+
+@test "Dockerfile supports both Moodle web-root layouts" {
+  run grep -F 'if [ -d /app/public/public ]; then' Dockerfile
+  [ "${status}" -eq 0 ]
+
+  run grep -F 'root * {$MOODLE_WEB_ROOT:/app/public/public}' docker/Caddyfile
+  [ "${status}" -eq 0 ]
+
+  run grep -F 'MOODLE_WEB_ROOT="${MOODLE_WEB_ROOT:-}"' docker/entrypoint.sh
+  [ "${status}" -eq 0 ]
+}
+
+@test "Dockerfile uses the direct Moodle archive path for alternate series" {
+  run grep -F 'https://download.moodle.org/download.php/direct/${MOODLE_SERIES}/moodle-${MOODLE_VERSION}.tgz' Dockerfile
+  [ "${status}" -eq 0 ]
+}
