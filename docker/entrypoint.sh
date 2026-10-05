@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+# config.php contains database credentials; newly created files stay private.
+umask 0077
+
 APP_ROOT="${APP_ROOT:-/app/public}"
 MOODLE_DATA_ROOT="${MOODLE_DATA_ROOT:-/app/moodledata}"
 MOODLE_CONFIG_ROOT="${MOODLE_CONFIG_ROOT:-/app/config}"
@@ -66,17 +69,17 @@ function default_site_url() {
 function restore_persisted_config() {
   if [[ -f "${PERSISTED_CONFIG_FILE}" ]]; then
     rm -f "${MOODLE_CONFIG_FILE}"
-    cp "${PERSISTED_CONFIG_FILE}" "${MOODLE_CONFIG_FILE}"
+    install -m 0600 "${PERSISTED_CONFIG_FILE}" "${MOODLE_CONFIG_FILE}"
     chown www-data:www-data "${MOODLE_CONFIG_FILE}" || true
-    chmod 0644 "${MOODLE_CONFIG_FILE}" || true
+    chmod 0600 "${MOODLE_CONFIG_FILE}"
   fi
 }
 
 function persist_config_snapshot() {
   [[ -f "${MOODLE_CONFIG_FILE}" ]] || return 0
-  cp "${MOODLE_CONFIG_FILE}" "${PERSISTED_CONFIG_FILE}"
+  install -m 0600 "${MOODLE_CONFIG_FILE}" "${PERSISTED_CONFIG_FILE}"
   chown www-data:www-data "${PERSISTED_CONFIG_FILE}" || true
-  chmod 0644 "${PERSISTED_CONFIG_FILE}" || true
+  chmod 0600 "${PERSISTED_CONFIG_FILE}"
 }
 
 function ensure_config_site_url() {
@@ -114,7 +117,7 @@ if ($updated !== $contents && file_put_contents($path, $updated) === false) {
 PHP
 
   chown www-data:www-data "${MOODLE_CONFIG_FILE}" || true
-  chmod 0644 "${MOODLE_CONFIG_FILE}" || true
+  chmod 0600 "${MOODLE_CONFIG_FILE}"
 }
 
 function wait_for_database() {
@@ -224,7 +227,8 @@ if [[ -z "${MOODLE_SITE_URL}" ]]; then
   MOODLE_SITE_URL="$(default_site_url)"
 fi
 
-install -d -m 0775 -o www-data -g www-data "${MOODLE_DATA_ROOT}" "${MOODLE_CONFIG_ROOT}"
+install -d -m 0775 -o www-data -g www-data "${MOODLE_DATA_ROOT}"
+install -d -m 0700 -o www-data -g www-data "${MOODLE_CONFIG_ROOT}"
 chown -R www-data:www-data "${MOODLE_DATA_ROOT}" "${MOODLE_CONFIG_ROOT}" || true
 prune_expired_caddy_certs
 
