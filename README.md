@@ -203,3 +203,13 @@ This repository does not contain:
 ## Notes
 
 Current feasibility notes are in [docs/frankenphp-feasibility.md](docs/frankenphp-feasibility.md).
+
+Synthetic network verifier acceptance (no container or database):
+
+```bash
+python3 -m unittest discover -s tests -p test_verify_http.py -v
+bats tests/bats/test_verify_moodle.bats
+```
+
+The Python fixture binds an ephemeral port on `127.0.0.1` and checks HTTP/body
+failures plus custom database-command errors and invalid table counts.

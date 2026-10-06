@@ -502,7 +502,8 @@ if [[ "${SKIP_DB_CHECK}" != "true" ]]; then
   run_shell_command "${DB_PING_COMMAND}" >/dev/null 2>&1 || fail "Database connectivity check failed"
   ok "Database connectivity check passed"
 
-  table_count="$(run_shell_command "${DB_QUERY_COMMAND}" 2>/dev/null | tail -n 1 | trim || true)"
+  query_output="$(run_shell_command "${DB_QUERY_COMMAND}" 2>/dev/null)" || fail "Database table query failed"
+  table_count="$(printf '%s\n' "${query_output}" | tail -n 1 | trim)"
   require_integer "${table_count}"
   (( table_count >= TABLE_MIN )) || fail "Expected at least ${TABLE_MIN} Moodle tables, found ${table_count}"
   ok "Moodle database contains ${table_count} tables"
