@@ -174,6 +174,7 @@ if (!empty($themesettings->sliderenabled)) {
         'transitionclass' => $transitionclass,
         // The pause control covers autoplaying carousels and slide videos (WCAG 2.2.2).
         'hasmedia' => $hasvideo || count($slides) > 1,
+        'carouselmodule' => theme_lovely_bootstrap_carousel_module(),
         'sitename' => format_string($SITE->fullname, true,
             ['context' => context_course::instance(SITEID), 'escape' => false]),
     ];

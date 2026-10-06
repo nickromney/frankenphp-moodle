@@ -32,7 +32,19 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Carousel from 'theme_boost/bootstrap/carousel';
+/**
+ * Load Bootstrap's Carousel class from the module this Moodle branch provides.
+ *
+ * Moodle 5.2 ships theme_boost/bootstrap/carousel (default export); 5.3 ships a core
+ * "bootstrap" bundle (named export). The layout passes the right name, so the module is only
+ * requested when the hero pause control is used and never 404s on either branch.
+ *
+ * @param {String} moduleName AMD module name.
+ * @returns {Promise<Function>} The Carousel class.
+ */
+const loadCarousel = (moduleName) => new Promise((resolve, reject) => {
+    window.require([moduleName], (module) => resolve(module.Carousel || module.default || module), reject);
+});
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -54,15 +66,16 @@ const autoplayVideos = () => {
 /**
  * Wire the hero pause/play button: one control stops carousel autoplay and slide videos.
  */
-const initHeroPause = () => {
+const initHeroPause = (carouselModule) => {
     const button = document.querySelector('.lovely-hero-pause');
     const carouselEl = document.getElementById('lovely-hero-carousel');
-    if (!button || !carouselEl) {
+    if (!button || !carouselEl || !carouselModule) {
         return;
     }
 
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async() => {
         const playing = button.dataset.lovelyState === 'playing';
+        const Carousel = await loadCarousel(carouselModule);
         const carousel = Carousel.getOrCreateInstance(carouselEl);
 
         if (playing) {
@@ -88,8 +101,11 @@ const initHeroPause = () => {
 
 /**
  * Initialise ambient motion handling.
+ *
+ * @param {String} [carouselModule] AMD module providing Bootstrap's Carousel; omit when the page
+ *     has no hero carousel (the login background video needs none).
  */
-export const init = () => {
+export const init = (carouselModule) => {
     autoplayVideos();
-    initHeroPause();
+    initHeroPause(carouselModule);
 };

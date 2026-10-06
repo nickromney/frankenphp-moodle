@@ -73,9 +73,12 @@
     {{#courseindex}}
         {{< theme_boost/drawer }}
             {{$id}}theme_boost-drawers-courseindex{{/id}}
+            {{! Moodle 5.2 renders course-index controls in drawerheadercontent; 5.3 replaced that
+                block with drawercontrols (MDL-89050). Each branch ignores the block it lacks. }}
             {{$drawerheadercontent}}
                 {{> theme_boost/courseindexdrawercontrols}}
             {{/drawerheadercontent}}
+            {{$drawercontrols}}{{> theme_boost/courseindexdrawercontrols}}{{/drawercontrols}}
             {{$drawerheading}}{{> theme_boost/courseindexdrawerheading}}{{/drawerheading}}
             {{$drawerclasses}}drawer drawer-left {{#courseindexopen}}show{{/courseindexopen}}{{/drawerclasses}}
             {{$drawercontent}}

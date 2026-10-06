@@ -15,6 +15,13 @@ body {
     background-color: $body-bg;
 }
 
+// The content column is a raised surface on the page canvas. Boost 5.2 painted it with $white;
+// Boost 5.3 switched to var(--bs-body-bg) for its colour modes (MDL-68037), which in Lovely is
+// the canvas colour, so the column vanished into the page. $white follows Lovely's dark mode.
+#page.drawers .main-inner {
+    background-color: $white;
+}
+
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6 {
     letter-spacing: -0.01em;
