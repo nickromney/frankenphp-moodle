@@ -26,9 +26,10 @@ services:
       dockerfile: Dockerfile
       args:
         FRANKENPHP_IMAGE: ${FRANKENPHP_IMAGE:-dunglas/frankenphp:php8.4-bookworm}
-        MOODLE_SERIES: ${MOODLE_SERIES:-stable502}
-        MOODLE_VERSION: ${MOODLE_VERSION:-5.2.2}
+        MOODLE_VERSION: ${MOODLE_VERSION:-5.2.4}
+        MOODLE_SERIES: ${MOODLE_SERIES:-}
         MOODLE_PACKAGE_URL: ${MOODLE_PACKAGE_URL:-}
+        MOODLE_SHA256: ${MOODLE_SHA256:-}
     depends_on:
       db:
         condition: service_healthy
