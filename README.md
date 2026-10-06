@@ -15,7 +15,7 @@ It is for the container runtime itself: image shape, required PHP extensions, Mo
 The current maintained baseline is:
 
 - FrankenPHP with PHP `8.4`
-- Moodle `5.2.2+` from the `MOODLE_502_STABLE` line
+- Moodle `5.2.4` (tag `v5.2.4`) by default; Moodle `5.3.0` (tag `v5.3.0`) supported
 - MariaDB
 - Docker
 - HTTPS on `moodle.docker.test.127.0.0.1.sslip.io`
@@ -43,11 +43,38 @@ make baseline
 - install Moodle automatically on first boot
 - serve Moodle on `https://moodle.docker.test.127.0.0.1.sslip.io`
 
-The default download uses Moodle's `stable502` channel with the `5.2.2` package
-name. Moodle publishes point-release fixes on that channel, so this resolves to
-the current `5.2.2+` code rather than the frozen `v5.2.2` tag. Set
-`MOODLE_SERIES=stable502 MOODLE_VERSION=5.2.2` explicitly if you want to make
-that choice visible in an external build.
+### Moodle releases
+
+`MOODLE_VERSION` is a Moodle release number. The build downloads that release's
+package, which matches the corresponding git tag: `moodle-5.2.4.tgz` is
+`v5.2.4`, not the weekly `5.2.4+` build (that is `moodle-latest-502.tgz`).
+[`docker/fetch-moodle.sh`](docker/fetch-moodle.sh) derives the stable channel
+from the version, tries `download.moodle.org` and then `packaging.moodle.org`,
+and verifies the package checksum for the pinned releases:
+
+| `MOODLE_VERSION` | Tag | Package | PHP | MariaDB | PostgreSQL |
+| --- | --- | --- | --- | --- | --- |
+| `5.2.4` (default) | `v5.2.4` | `stable502/moodle-5.2.4.tgz` | 8.3-8.4 | 10.11+ | 16+ |
+| `5.3.0` | `v5.3.0` | `stable503/moodle-5.3.tgz` | 8.3-8.4 | 11.4+ | 17+ |
+
+Moodle names the first package of a major release without the patch digit, so
+`MOODLE_VERSION=5.3.0` fetches `moodle-5.3.tgz`. To build Moodle 5.3:
+
+```bash
+MOODLE_VERSION=5.3.0 docker compose up -d --build
+```
+
+The compose database is `mariadb:11.8`, which satisfies both releases. If you
+point the image at an external database, Moodle 5.3 refuses to install or
+upgrade on MariaDB older than 11.4 or PostgreSQL older than 17.
+
+Other releases still build, but the build warns that the package checksum was
+not verified. Pass `MOODLE_SHA256` to verify one, or `MOODLE_SERIES` and
+`MOODLE_PACKAGE_URL` to override the source entirely.
+
+The bundled `lovely` theme declares support for Moodle 5.2 and 5.3. Moodle 5.3
+moved Bootstrap's JavaScript into a core `bootstrap` bundle and replaced the
+course-index drawer's header block; the theme handles both branches.
 
 ### Moodle 4.4.2+
 
@@ -118,6 +145,41 @@ Browsers with their own trust store, such as Firefox, may still need the exporte
 
 `make baseline` runs the same compose stack and then verifies the running site and database state.
 
+## Behind a TLS-terminating proxy
+
+By default Caddy serves HTTPS itself with its local CA. When a proxy in front of the
+container terminates TLS (Server Manager's host nginx, for example), run it as plain HTTP:
+
+```bash
+SERVER_NAME=:80 MOODLE_TLS_MODE=off MOODLE_SSLPROXY=true \
+MOODLE_SITE_URL=https://moodle.example.com docker compose up -d
+```
+
+- `MOODLE_TLS_MODE` is `internal` (default) or `off`; anything else stops the container.
+- `MOODLE_SSLPROXY=true` keeps one `$CFG->sslproxy = true;` line in `config.php`, so Moodle
+  accepts an `https` wwwroot reached over plain HTTP. Setting it back to `false` removes it.
+
+## Publishing for Server Manager
+
+Server Manager runs this image for container Moodle sites. It pulls it from the loopback
+registry its own Kamal deploys use (`localhost:5555`), never from an external registry:
+
+```bash
+# in server-manager: start the registry (named volume, pinned image)
+bin/local-registry ensure
+
+# here: build amd64 and arm64 and push 5.2.4 and 5.3.0
+make publish
+```
+
+Each version is pushed as `localhost:5555/frankenphp-moodle:<version>`, the tag Server
+Manager deploys, and as `<version>-<git revision>` for rollback and audit. The build runs on
+Kamal's buildx builder (`kamal-local-registry-docker-container`, host networking).
+`scripts/publish-image.sh` refuses to publish a release that is not checksum-pinned in
+`docker/fetch-moodle.sh`, or from a working tree with uncommitted changes (`ALLOW_DIRTY=1`
+overrides that and tags the revision `-dirty`). Server Manager hosts pull through an SSH
+reverse forward opened for each playbook run.
+
 ## Themes
 
 This repository bundles a custom theme, [`theme/lovely`](theme/lovely), a Boost child theme
@@ -143,7 +205,7 @@ site's default theme on container start via the `MOODLE_THEME` environment varia
 MOODLE_THEME=lovely docker compose up -d --build
 ```
 
-Set `MOODLE_THEME=boost` (or `classic`) to fall back to a stock theme instead. On every start
+Set `MOODLE_THEME=boost` to fall back to the stock theme instead (`classic` exists only up to Moodle 5.2; 5.3 removed it). On every start
 the entrypoint first runs `php admin/cli/upgrade.php --non-interactive` (so plugins shipped by a
 rebuilt image, such as the bundled theme, are registered on existing installs), then applies
 `MOODLE_THEME` with `php admin/cli/cfg.php --name=theme --set=...` followed by

@@ -30,6 +30,8 @@ MOODLE_ADMIN_USER="${MOODLE_ADMIN_USER:-admin}"
 MOODLE_ADMIN_PASSWORD="${MOODLE_ADMIN_PASSWORD:-Adminpass123!}"
 MOODLE_ADMIN_EMAIL="${MOODLE_ADMIN_EMAIL:-demo@moodle.test}"
 MOODLE_THEME="${MOODLE_THEME:-lovely}"
+# Set when a proxy in front of the container terminates TLS for an https wwwroot.
+MOODLE_SSLPROXY="${MOODLE_SSLPROXY:-false}"
 
 function info() {
   printf '[entrypoint] %s\n' "$1"
@@ -147,6 +149,52 @@ function wait_for_database() {
   fail "database did not become ready in time"
 }
 
+function ensure_config_sslproxy() {
+  [[ -f "${MOODLE_CONFIG_FILE}" ]] || return 0
+
+  case "${MOODLE_SSLPROXY}" in
+    true | false) ;;
+    *) fail "MOODLE_SSLPROXY must be true or false, got: ${MOODLE_SSLPROXY}" ;;
+  esac
+
+  MOODLE_CONFIG_FILE_PATH="${MOODLE_CONFIG_FILE}" \
+  MOODLE_SSLPROXY="${MOODLE_SSLPROXY}" \
+  php <<'PHP'
+<?php
+$path = getenv("MOODLE_CONFIG_FILE_PATH");
+$contents = file_get_contents($path);
+if ($contents === false) {
+    fwrite(STDERR, "failed to read config.php\n");
+    exit(1);
+}
+
+// Drop any existing setting, then add it back after wwwroot when requested, so the
+// file always holds exactly zero or one line and restarts are idempotent.
+$updated = preg_replace('/^\$CFG->sslproxy\s*=.*\R/m', '', $contents);
+if (getenv("MOODLE_SSLPROXY") === "true") {
+    $updated = preg_replace(
+        '/^(\$CFG->wwwroot\s*=.*\R)/m',
+        '$1$CFG->sslproxy = true;' . "\n",
+        $updated,
+        1,
+        $count
+    );
+    if ($updated === null || $count !== 1) {
+        fwrite(STDERR, "failed to add \$CFG->sslproxy to config.php\n");
+        exit(1);
+    }
+}
+
+if ($updated !== $contents && file_put_contents($path, $updated) === false) {
+    fwrite(STDERR, "failed to write config.php\n");
+    exit(1);
+}
+PHP
+
+  chown www-data:www-data "${MOODLE_CONFIG_FILE}" || true
+  chmod 0600 "${MOODLE_CONFIG_FILE}"
+}
+
 function install_moodle_if_needed() {
   [[ "${MOODLE_AUTO_INSTALL}" == "true" ]] || return 0
   [[ -f "${PERSISTED_CONFIG_FILE}" ]] && return 0
@@ -223,6 +271,11 @@ if [[ -z "${MOODLE_WEB_ROOT}" ]]; then
 fi
 export MOODLE_WEB_ROOT
 
+case "${MOODLE_TLS_MODE:-internal}" in
+  internal | off) ;;
+  *) fail "MOODLE_TLS_MODE must be internal or off, got: ${MOODLE_TLS_MODE}" ;;
+esac
+
 if [[ -z "${MOODLE_SITE_URL}" ]]; then
   MOODLE_SITE_URL="$(default_site_url)"
 fi
@@ -234,10 +287,12 @@ prune_expired_caddy_certs
 
 restore_persisted_config
 ensure_config_site_url
+ensure_config_sslproxy
 install_moodle_if_needed
 upgrade_moodle_if_needed
 configure_theme
 ensure_config_site_url
+ensure_config_sslproxy
 persist_config_snapshot
 
 exec docker-php-entrypoint "$@"

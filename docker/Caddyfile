@@ -17,10 +17,20 @@
 
 {$CADDY_EXTRA_CONFIG}
 
+# MOODLE_TLS_MODE selects how this site handles TLS: "internal" (default) serves HTTPS
+# with Caddy's local CA; "off" serves plain HTTP for a proxy that terminates TLS in front
+# of the container (pair it with SERVER_NAME=:80 and MOODLE_SSLPROXY=true).
+(tls-internal) {
+	tls internal
+}
+
+(tls-off) {
+}
+
 {$SERVER_NAME:moodle.docker.test.127.0.0.1.sslip.io} {
 	root * {$MOODLE_WEB_ROOT:/app/public/public}
 	encode zstd br gzip
-	tls internal
+	import tls-{$MOODLE_TLS_MODE:internal}
 
 	{$CADDY_SERVER_EXTRA_DIRECTIVES}
 
