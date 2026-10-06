@@ -16,7 +16,7 @@ APP_HTTPS_PORT="${APP_HTTPS_PORT:-18443}"
 APP_BIND_HOST="${APP_BIND_HOST:-127.0.0.1}"
 SITE_HOST="${MOODLE_HOST:-moodle.docker.test.127.0.0.1.sslip.io}"
 
-DB_IMAGE="mariadb:11.8"
+DB_IMAGE="${DB_IMAGE:-mariadb:11.8}"
 ROOT_PASSWORD="rootpass"
 DB_NAME="moodle"
 DB_USER="moodle"
@@ -77,7 +77,9 @@ function cleanup_resources() {
 }
 
 function wait_for_http() {
-  local attempts=90
+  # First boot installs Moodle before FrankenPHP serves; a 5.3 install takes
+  # longer than 90 seconds on a laptop.
+  local attempts="${BASELINE_HTTP_WAIT_SECONDS:-240}"
   while (( attempts > 0 )); do
     if curl -kfsSL -o /dev/null "${SITE_URL}" >/dev/null 2>&1; then
       return 0

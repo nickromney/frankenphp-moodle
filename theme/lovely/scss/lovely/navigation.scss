@@ -120,8 +120,15 @@
     // utility (with !important) when editing is on - both illegible on the dark navbar.
     // !important is required to out-rank the utility, same story as `.bg-body`/`.m-0`.
     .editmode-switch-form {
-        .form-check-label {
+        .form-check-label,
+        .mds-switch-label {
             color: rgba($lovely-navbar-fg, 0.85) !important;
+        }
+
+        // Moodle 5.3 renders the switch with the design system's mds-switch, whose label
+        // does not inherit the page font (it fell back to the browser serif).
+        .mds-switch-label {
+            font-family: inherit;
         }
 
         .text-primary {

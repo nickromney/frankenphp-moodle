@@ -26,14 +26,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-// Matches theme_boost's own $plugin->requires for Moodle 5.2 (stable502), read from the
-// built image's /app/public/public/theme/boost/version.php so this child theme never claims
-// compatibility it hasn't actually been checked against.
+// requires matches theme_boost's own $plugin->requires for Moodle 5.2 (stable502), read from
+// the built image's /app/public/public/theme/boost/version.php. supported lists only the
+// branches this child theme has been checked against: 5.2 and 5.3 (stable503).
 $plugin->component = 'theme_lovely';
-$plugin->version   = 2026070813;
+$plugin->version   = 2026100600;
 $plugin->requires  = 2026042000;
-$plugin->supported = [502, 502];
-$plugin->release   = '1.2.2 for Moodle 5.2';
+$plugin->supported = [502, 503];
+$plugin->release   = '1.3.0 for Moodle 5.2 and 5.3';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->dependencies = [
     'theme_boost' => 2026042000,

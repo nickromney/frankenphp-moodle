@@ -30,13 +30,19 @@ baseline: ## Build, install, and verify the FrankenPHP Moodle baseline
 	@echo "$(YELLOW)Running FrankenPHP Moodle baseline...$(NC)"
 	@./tests/docker/run-baseline.sh
 
+PUBLISH_VERSIONS ?= 5.2.4 5.3.0
+
+.PHONY: publish
+publish: ## Build amd64+arm64 images and push to Server Manager's loopback registry (localhost:5555)
+	@./scripts/publish-image.sh $(PUBLISH_VERSIONS)
+
 .PHONY: test-preflight
 test-preflight: ## Run TLS certificate preflight BATS tests
 	@bats tests/bats/test_tls_preflight.bats
 
 .PHONY: test-smoke-bats
 test-smoke-bats: ## Run smoke BATS tests
-	@bats tests/bats/test_moodle_release_pin.bats tests/bats/test_verify_moodle.bats tests/bats/test_theme_lovely.bats tests/bats/test_config_permissions.bats tests/bats/test_docker_ports.bats tests/bats/test_tls_preflight.bats
+	@bats tests/bats/test_moodle_release_pin.bats tests/bats/test_verify_moodle.bats tests/bats/test_theme_lovely.bats tests/bats/test_config_permissions.bats tests/bats/test_docker_ports.bats tests/bats/test_tls_preflight.bats tests/bats/test_proxy_and_publish.bats
 
 .PHONY: test-integration-bats
 test-integration-bats: ## Run the end-to-end FrankenPHP baseline BATS test

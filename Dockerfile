@@ -3,9 +3,13 @@ FROM composer:2 AS composer-bin
 
 FROM ${FRANKENPHP_IMAGE}
 
-ARG MOODLE_SERIES=stable502
-ARG MOODLE_VERSION=5.2.2
+# MOODLE_VERSION is a release number (5.2.4, 5.3.0). MOODLE_SERIES defaults to
+# the matching stable channel; MOODLE_SHA256 defaults to the pinned checksum
+# for known releases (see docker/fetch-moodle.sh).
+ARG MOODLE_VERSION=5.2.4
+ARG MOODLE_SERIES=
 ARG MOODLE_PACKAGE_URL=
+ARG MOODLE_SHA256=
 ARG MOODLE_PHP_EXTENSIONS="gd intl mysqli pdo_mysql soap zip ldap"
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -19,11 +23,11 @@ RUN mkdir -p /app/public /app/moodledata /app/config
 
 WORKDIR /app/public
 
+COPY docker/fetch-moodle.sh /usr/local/bin/fetch-moodle.sh
+
 RUN set -eux; \
-    package_url="${MOODLE_PACKAGE_URL:-https://download.moodle.org/download.php/direct/${MOODLE_SERIES}/moodle-${MOODLE_VERSION}.tgz}"; \
-    curl -fsSL -o /tmp/moodle.tgz "${package_url}"; \
-    tar -xzf /tmp/moodle.tgz --strip-components=1 -C /app/public; \
-    rm -f /tmp/moodle.tgz; \
+    bash /usr/local/bin/fetch-moodle.sh "${MOODLE_VERSION}" /app/public \
+        "${MOODLE_SERIES}" "${MOODLE_PACKAGE_URL}" "${MOODLE_SHA256}"; \
     composer install --no-dev --optimize-autoloader --no-interaction; \
     rm -f /usr/local/bin/composer
 

@@ -63,6 +63,19 @@ function theme_lovely_get_main_scss_content($theme) {
 }
 
 /**
+ * AMD module that provides Bootstrap's Carousel on this Moodle branch.
+ *
+ * Moodle 5.3 replaced the theme_boost/bootstrap/* submodules with a core "bootstrap"
+ * bundle (MDL-88766), and no single module name exists on both 5.2 and 5.3.
+ *
+ * @return string AMD module name for theme_lovely/motion to load.
+ */
+function theme_lovely_bootstrap_carousel_module(): string {
+    global $CFG;
+    return ((int) $CFG->branch >= 503) ? 'bootstrap' : 'theme_boost/bootstrap/carousel';
+}
+
+/**
  * Map a bundled font choice to a CSS font-family stack.
  *
  * @param string $choice One of inter|sourcesans|lora|custom.

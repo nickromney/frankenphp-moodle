@@ -73,7 +73,31 @@
   [ -n "${version}" ]
   [ "${version}" -ge 2026070812 ]
 
-  run grep -E "^\\\$plugin->release   = '[0-9]+\.[0-9]+\.[0-9]+ for Moodle 5\.2';" theme/lovely/version.php
+  run grep -E "^\\\$plugin->release   = '[0-9]+\.[0-9]+\.[0-9]+ for Moodle 5\.2 and 5\.3';" theme/lovely/version.php
+  [ "${status}" -eq 0 ]
+}
+
+@test "theme_lovely declares support for Moodle 5.2 and 5.3" {
+  run grep -Fx '$plugin->supported = [502, 503];' theme/lovely/version.php
+  [ "${status}" -eq 0 ]
+}
+
+@test "theme_lovely loads Bootstrap's Carousel from the module each branch ships" {
+  run grep -F "'bootstrap' : 'theme_boost/bootstrap/carousel'" theme/lovely/lib.php
+  [ "${status}" -eq 0 ]
+
+  run grep -F 'theme_boost/bootstrap/carousel' theme/lovely/amd/build/motion.min.js
+  [ "${status}" -ne 0 ]
+
+  run grep -F "Motion.init('{{carouselmodule}}');" theme/lovely/templates/hero.mustache
+  [ "${status}" -eq 0 ]
+}
+
+@test "theme_lovely frontpage drawer renders course-index controls on 5.2 and 5.3" {
+  run grep -F '{{$drawerheadercontent}}' theme/lovely/templates/frontpage.mustache
+  [ "${status}" -eq 0 ]
+
+  run grep -F '{{$drawercontrols}}{{> theme_boost/courseindexdrawercontrols}}{{/drawercontrols}}' theme/lovely/templates/frontpage.mustache
   [ "${status}" -eq 0 ]
 }
 
@@ -91,4 +115,17 @@
 @test "theme_lovely parity matrix has no Not included rows left" {
   run grep -c '| \*\*Not included\*\*' docs/theme-lovely-lambda-parity.md
   [ "${output}" = "0" ]
+}
+
+@test "theme_lovely keeps the content column on the surface colour under Boost 5.3" {
+  run awk '/^#page\.drawers \.main-inner \{/ { getline; found = ($0 ~ /background-color: \$white;/) } END { exit !found }' theme/lovely/scss/lovely/base.scss
+  [ "${status}" -eq 0 ]
+}
+
+@test "theme_lovely styles Moodle 5.3's design-system edit switch label on the navbar" {
+  run grep -F '.mds-switch-label {' theme/lovely/scss/lovely/navigation.scss
+  [ "${status}" -eq 0 ]
+
+  run grep -F 'font-family: inherit;' theme/lovely/scss/lovely/navigation.scss
+  [ "${status}" -eq 0 ]
 }
