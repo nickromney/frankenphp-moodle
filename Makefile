@@ -36,7 +36,7 @@ test-preflight: ## Run TLS certificate preflight BATS tests
 
 .PHONY: test-smoke-bats
 test-smoke-bats: ## Run smoke BATS tests
-	@bats tests/bats/test_moodle_release_pin.bats tests/bats/test_verify_moodle.bats tests/bats/test_theme_lovely.bats tests/bats/test_docker_ports.bats tests/bats/test_tls_preflight.bats
+	@bats tests/bats/test_moodle_release_pin.bats tests/bats/test_verify_moodle.bats tests/bats/test_theme_lovely.bats tests/bats/test_config_permissions.bats tests/bats/test_docker_ports.bats tests/bats/test_tls_preflight.bats
 
 .PHONY: test-integration-bats
 test-integration-bats: ## Run the end-to-end FrankenPHP baseline BATS test

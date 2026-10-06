@@ -15,9 +15,15 @@
   [ "${status}" -eq 0 ]
 }
 
-@test "Dockerfile copies theme/lovely into the Moodle 5.x public web root" {
-  run grep -F "COPY theme/lovely /app/public/public/theme/lovely" Dockerfile
-  [ "${status}" -eq 0 ]
+@test "Dockerfile stages the theme and copies it for both Moodle layouts" {
+  for instruction in \
+    'COPY theme/lovely /tmp/moodle-theme-lovely' \
+    'cp -a /tmp/moodle-theme-lovely /app/public/public/theme/lovely' \
+    'cp -a /tmp/moodle-theme-lovely /app/public/theme/lovely' \
+    'rm -rf /tmp/moodle-theme-lovely'; do
+    run grep -F "${instruction}" Dockerfile
+    [ "${status}" -eq 0 ]
+  done
 }
 
 @test "entrypoint sets the default theme from MOODLE_THEME and purges caches" {
