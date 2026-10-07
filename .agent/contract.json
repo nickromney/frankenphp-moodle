@@ -15,7 +15,8 @@
       "effects": [
         "read",
         "local_write",
-        "process"
+        "process",
+        "network"
       ],
       "acceptance_scope": "fixture",
       "inputs": [
@@ -24,7 +25,19 @@
         "pyproject.toml",
         "uv.lock",
         "tests/test_verify_http.py",
-        "verify-moodle.sh"
+        "verify-moodle.sh",
+        "docker/tls-preflight.sh",
+        "tests/bats/test_baseline.bats",
+        "tests/bats/test_config_permissions.bats",
+        "tests/bats/test_docker_ports.bats",
+        "tests/bats/test_moodle_release_pin.bats",
+        "tests/bats/test_proxy_and_publish.bats",
+        "tests/bats/test_theme_lovely.bats",
+        "tests/bats/test_tls_preflight.bats",
+        "tests/bats/test_verify_moodle.bats",
+        "tests/docker/compose-up.sh",
+        "tests/docker/lib.sh",
+        "tests/docker/run-baseline.sh"
       ],
       "requires": [],
       "recovery": "Read the failed owner job; repair its source or declared prerequisite, then rerun the full local gate. Fixture acceptance does not authorize cloud/device deployment."
@@ -49,12 +62,17 @@
       "effects": [
         "read",
         "local_write",
-        "process"
+        "process",
+        "network"
       ],
       "acceptance_scope": "fixture",
       "inputs": [
         "tests/test_verify_http.py",
-        "verify-moodle.sh"
+        "verify-moodle.sh",
+        "Makefile",
+        "pyproject.toml",
+        "uv.lock",
+        "lefthook.yml"
       ],
       "requires": [],
       "recovery": "Inspect the named source/test and reproduce the failing synthetic case before reusing this lesson."
