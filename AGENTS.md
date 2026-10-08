@@ -1,11 +1,9 @@
 # frankenphp-moodle agent guide
 
-For system ownership, action effects, verification scope or a new agent task,
-read [the operating model](docs/agent-system.md). Detailed product plans
-remain at the linked owners; historical observations retain their dates.
+## Verify
 
-The source-owned `.agent/contract.json` declares existing local verification actions,
-their effects and acceptance scope, and lessons bound to exact source/test bytes.
-Run the full local gate with `lefthook run pre-push --force`; a plain manual run
-can select no files. Remote workflows publish allowed artifacts only. Local
-fixture acceptance does not establish a live cloud, device or deployment state.
+- Default suite: `make test` (BATS smoke). `make test-preflight` runs the TLS preflight BATS. Pre-push gate: `lefthook run pre-push --force`, which runs `uv run --locked make test` and `test_verify_http.py`.
+- Offline tests prove smoke and TLS preflight fixtures only. Runtime checks need an attended container environment; `verify-moodle.sh` is the acceptance surface.
+- `make baseline` builds, installs and starts containers and may download images. `make publish` pushes multiarch images to a loopback registry.
+- `make down` removes compose volumes and is data-destructive; choose retention or reset first.
+- Publishing creates a consumable image; Server Manager adoption is a separate step.
