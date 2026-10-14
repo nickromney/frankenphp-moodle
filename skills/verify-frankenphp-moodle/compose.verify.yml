@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      network: none
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+  db:
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M

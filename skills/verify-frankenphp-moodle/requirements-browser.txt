@@ -1,0 +1,2 @@
+# Pinned runtime for the local DOM journey; install into an isolated project env.
+playwright==1.63.0

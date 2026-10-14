@@ -236,6 +236,11 @@ The repository keeps verification separate from image setup. The shared verifier
 
 The baseline runner uses that verifier with compose-aware command overrides so the same checks can be reused in other environments.
 
+For an isolated end-to-end check of the current source, run `make verify`. The
+verification skill builds only from cached images, starts a resource-capped
+loopback Compose project, checks the login form, Lovely theme stylesheet and
+database, then removes its own containers and volumes while retaining logs.
+
 ## Tests
 
 ```bash
