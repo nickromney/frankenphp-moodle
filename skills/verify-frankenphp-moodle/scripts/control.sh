@@ -21,9 +21,13 @@ vk_sample_commands() { printf '%s\n' verify launch doctor cleanup; }
 vk_paths() {
   local browsers
   browsers="$(vk_browsers)" || return $?
+  case "${VERIFY_BUILD_NETWORK:-none}" in
+    none|default) ;;
+    *) vk_err "VERIFY_BUILD_NETWORK must be none or default"; return 2 ;;
+  esac
   STATE="$VK_BASE_DIR/$VK_RUN_ID/state"
   EVIDENCE="$VK_EVIDENCE_ROOT/$VK_RUN_ID"
-  PROJECT="verify-moodle-$VK_RUN_ID"
+  PROJECT="verify-moodle-$(printf '%s' "$VK_RUN_ID" | shasum -a 256 | cut -c 1-24)"
   HTTP_PORT=""
   HTTPS_PORT=""
   SITE_URL=""
@@ -39,20 +43,30 @@ safe_project_name() {
 }
 
 compose() {
+  VERIFY_BUILD_NETWORK="${VERIFY_BUILD_NETWORK:-none}" \
+  MOODLE_AUTO_INSTALL=true \
+  MOODLE_VERSION=5.2.4 MOODLE_SERIES='' MOODLE_PACKAGE_URL='' MOODLE_SHA256='' \
+  MOODLE_DB_ROOT_PASSWORD=rootpass MOODLE_DB_NAME=moodle \
+  MOODLE_DB_USER=moodle MOODLE_DB_PASSWORD=moodlepass \
+  MOODLE_WEB_ROOT='' MOODLE_SITE_SCHEME=https \
+  MOODLE_SITE_FULLNAME=Moodle MOODLE_SITE_SHORTNAME=Moodle \
+  MOODLE_ADMIN_USER=admin MOODLE_ADMIN_PASSWORD=Adminpass123! \
+  MOODLE_ADMIN_EMAIL=demo@moodle.test MOODLE_THEME=lovely \
+  MOODLE_DB_WAIT_ATTEMPTS=60 \
   APP_BIND_HOST=127.0.0.1 \
   APP_HTTP_PORT="$HTTP_PORT" \
   APP_HTTPS_PORT="$HTTPS_PORT" \
   MOODLE_HOST=localhost \
   SERVER_NAME=localhost \
   MOODLE_SITE_URL="$SITE_URL" \
-  "${DOCKER_CMD:-docker}" compose -p "$PROJECT" \
+  "${DOCKER_CMD:-docker}" compose --env-file /dev/null -p "$PROJECT" \
     -f "$VK_ROOT/compose.yml" \
     -f "$VK_SKILL_DIR/compose.verify.yml" "$@"
 }
 
 vk_plan() {
   case "$1" in
-    verify) vk_plan_line "preflight cached images, pinned Playwright engines, and disk; build current Moodle source; run app (1 CPU/1 GiB) and database (1 CPU/512 MiB) in isolated Compose project $PROJECT; prove login DOM in $(vk_browsers | tr '\n' ' ') plus theme, config, and tables; remove only project containers/volumes; retain evidence in $EVIDENCE" ;;
+    verify) vk_plan_line "preflight cached images, pinned Playwright engines, and disk; build current Moodle source (build network=${VERIFY_BUILD_NETWORK:-none}; default permits package downloads, never image pulls); run app (1 CPU/1 GiB) and database (1 CPU/512 MiB) in isolated Compose project $PROJECT; prove login DOM in $(vk_browsers | tr '\n' ' ') plus theme, config, and tables; remove only project containers/volumes; retain evidence in $EVIDENCE" ;;
     launch) vk_plan_line "check Docker, cached images, and free-space floor before building; start project $PROJECT on loopback only" ;;
     doctor) vk_plan_line "wait for the run's Moodle login page to answer at $SITE_URL and report stack health" ;;
     cleanup) vk_plan_line "capture run logs, remove Compose project $PROJECT with its own volumes and locally built image; keep $EVIDENCE" ;;
@@ -81,6 +95,7 @@ cmd_launch() {
   printf '%s\n' "$HTTPS_PORT" > "$STATE/https-port"
   SITE_URL="https://localhost:$HTTPS_PORT"
   printf '%s\n' "$PROJECT" > "$STATE/project"
+  printf 'build network=%s (default permits package downloads; image pulls disabled)\n' "${VERIFY_BUILD_NETWORK:-none}" > "$EVIDENCE/build-policy.txt"
   compose build --pull=false app > "$EVIDENCE/build.log" 2>&1 || {
     cat "$EVIDENCE/build.log" >&2
     vk_fail "current source build failed; see $EVIDENCE/build.log"
@@ -121,6 +136,10 @@ cmd_cleanup() {
   vk_say "removed containers, volumes, and local image for run=$VK_RUN_ID; evidence kept at $EVIDENCE"
 }
 
+run_moodle_acceptance() {
+  CURL_CA_BUNDLE="$EVIDENCE/caddy-root.crt" "$VK_ROOT/verify-moodle.sh" "$@"
+}
+
 vk_verify_recipes() {
   local theme_asset_url browser playwright_python browsers
   browsers="$(vk_browsers)" || return $?
@@ -155,9 +174,15 @@ PY
     return 1
   }
   vk_expect_file "$EVIDENCE/theme.css"
+  if ! compose exec -T app cat /data/caddy/pki/authorities/local/root.crt > "$EVIDENCE/caddy-root.crt"; then
+    vk_fail "could not read the owned Caddy public root certificate"
+    return 1
+  fi
+  vk_expect_file "$EVIDENCE/caddy-root.crt"
   playwright_python="${VERIFY_PLAYWRIGHT_PYTHON:-$VK_ROOT/.venv/bin/python}"
   for browser in $browsers; do
-    MOODLE_VERIFY_URL="$SITE_URL" PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-${VERIFY_BROWSER_CACHE:-}}" \
+    MOODLE_VERIFY_ROOT_CA="$EVIDENCE/caddy-root.crt" MOODLE_VERIFY_FIREFOX_PROFILE="$STATE/firefox-profile" \
+    MOODLE_VERIFY_URL="$SITE_URL" MOODLE_VERIFY_EVIDENCE="$EVIDENCE" PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-${VERIFY_BROWSER_CACHE:-}}" \
       "$playwright_python" "$VK_SKILL_DIR/tests/browser_journey.py" "$browser" \
       > "$EVIDENCE/$browser-browser.log" 2>&1 || {
       cat "$EVIDENCE/$browser-browser.log" >&2
@@ -186,7 +211,7 @@ PY
   if [ "$table_count" -lt 400 ]; then vk_fail "expected at least 400 Moodle tables, found $table_count"; return 1; fi
   vk_say "PASS: login page exposed username/password fields and loaded the Lovely stylesheet"
   vk_say "PASS: current app container has config.php; MariaDB ping succeeded; table_count=$table_count"
-  "$VK_ROOT/verify-moodle.sh" --backend none --database mariadb --skip-web-check --skip-php-check \
+  run_moodle_acceptance --backend none --database mariadb --skip-web-check --skip-php-check \
     --url "$SITE_URL/login/index.php" --config-check-command \
     "docker compose -p $PROJECT -f $VK_ROOT/compose.yml -f $VK_SKILL_DIR/compose.verify.yml exec -T app test -s /app/public/config.php" \
     --db-ping-command \

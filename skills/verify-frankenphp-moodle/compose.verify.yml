@@ -1,7 +1,7 @@
 services:
   app:
     build:
-      network: none
+      network: ${VERIFY_BUILD_NETWORK:-none}
     deploy:
       resources:
         limits:

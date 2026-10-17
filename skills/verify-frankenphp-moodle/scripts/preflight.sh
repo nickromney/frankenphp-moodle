@@ -7,9 +7,15 @@ DOCKER_CMD="${DOCKER_CMD:-docker}"
 MIN_FREE_KIB=26214400
 PLAYWRIGHT_PYTHON="${VERIFY_PLAYWRIGHT_PYTHON:-$ROOT/.venv/bin/python}"
 
-for tool in awk curl df grep python3; do
+for tool in awk curl df grep python3 tr; do
   if ! command -v "$tool" >/dev/null 2>&1; then
     echo "FAIL: required local tool is missing: $tool" >&2
+    exit 1
+  fi
+done
+for browser in $(printf '%s' "${VERIFY_BROWSERS:-chromium,firefox,webkit}" | tr ',' ' '); do
+  if [ "$browser" = firefox ] && ! command -v certutil >/dev/null 2>&1; then
+    echo "FAIL: NSS certutil is required for task-local Firefox trust" >&2
     exit 1
   fi
 done
