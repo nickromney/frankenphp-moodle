@@ -50,3 +50,6 @@ test-integration-bats: ## Run the end-to-end FrankenPHP baseline BATS test
 
 .PHONY: test
 test: test-smoke-bats ## Run the default test suite
+
+VERIFY_SKILL := skills/verify-frankenphp-moodle
+include $(VERIFY_SKILL)/verify.mk
