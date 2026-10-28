@@ -7,6 +7,8 @@ DOCKER_CMD="${DOCKER_CMD:-docker}"
 MIN_FREE_KIB=26214400
 PLAYWRIGHT_PYTHON="${VERIFY_PLAYWRIGHT_PYTHON:-$ROOT/.venv/bin/python}"
 
+/bin/bash "$(dirname "$0")/check-php-image.sh" "$ROOT"
+
 for tool in awk curl df grep python3 tr; do
   if ! command -v "$tool" >/dev/null 2>&1; then
     echo "FAIL: required local tool is missing: $tool" >&2
@@ -32,6 +34,24 @@ if ! "$DOCKER_CMD" compose version >/dev/null 2>&1; then
   exit 1
 fi
 
+effective_image="$("$DOCKER_CMD" compose --env-file /dev/null \
+  -f "$ROOT/compose.yml" -f "$ROOT/skills/verify-frankenphp-moodle/compose.verify.yml" \
+  config --format json | python3 -c '
+import json, pathlib, sys
+build = json.load(sys.stdin)["services"]["app"]["build"]
+root = pathlib.Path(sys.argv[1]).resolve()
+context = pathlib.Path(build["context"]).resolve()
+dockerfile = (context / build.get("dockerfile", "Dockerfile")).resolve()
+if context != root or dockerfile != root / "Dockerfile" or build.get("dockerfile_inline") or build.get("target"):
+    raise SystemExit("FAIL: unexpected Compose build context, Dockerfile, or target")
+print(build["args"]["FRANKENPHP_IMAGE"])
+' "$ROOT")" || {
+  echo "FAIL: cannot resolve effective Compose image selection" >&2
+  exit 1
+}
+[ -n "$effective_image" ] || { echo "FAIL: Compose image selection is empty" >&2; exit 1; }
+FRANKENPHP_IMAGE="$effective_image" /bin/bash "$(dirname "$0")/check-php-image.sh" "$ROOT"
+
 available_kib="$(df -Pk "$ROOT" | awk 'END { print $4 }')"
 case "$available_kib" in
   ''|*[!0-9]*) echo "FAIL: could not read available disk space for $ROOT" >&2; exit 1 ;;
@@ -42,7 +62,7 @@ if [ "$available_kib" -lt "$MIN_FREE_KIB" ]; then
 fi
 
 for image in \
-  "${FRANKENPHP_IMAGE:-dunglas/frankenphp:php8.4-bookworm}" \
+  "$effective_image" \
   "${DB_IMAGE:-mariadb:11.8}" \
   "composer:2"; do
   if ! "$DOCKER_CMD" image inspect "$image" >/dev/null 2>&1; then

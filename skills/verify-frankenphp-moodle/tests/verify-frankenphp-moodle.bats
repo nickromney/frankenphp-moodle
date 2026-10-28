@@ -13,12 +13,17 @@ setup() {
 case "$1 $2" in
   "info ") exit 0 ;;
   "compose version") exit 0 ;;
+  "compose --env-file") printf '{"services":{"app":{"build":{"context":"%s","dockerfile":"Dockerfile","args":{"FRANKENPHP_IMAGE":"dunglas/frankenphp:1.13.2-php8.4.27-bookworm@sha256:49369ff211d81dc30a15890d58c0651d639aef0d9c0a9b91bcc6f387a77bd7a2"}}}}}\n' "$TEST_ROOT" ;;
   "image inspect") exit 1 ;;
 esac
-exit 2
+exit 0
 SH
-  chmod +x "$fake_docker"
-  run env VERIFY_BROWSERS=chromium DOCKER_CMD="$fake_docker" /bin/bash "$PREFLIGHT" "$ROOT" "$BATS_TEST_TMPDIR/browsers"
+  cat > "$BATS_TEST_TMPDIR/df" <<'SH'
+#!/bin/sh
+printf 'Filesystem 1024-blocks Used Available Capacity Mounted\nfixture 50000000 1 49999999 1%% /\n'
+SH
+  chmod +x "$fake_docker" "$BATS_TEST_TMPDIR/df"
+  run env -u FRANKENPHP_IMAGE PATH="$BATS_TEST_TMPDIR:$PATH" TEST_ROOT="$ROOT" VERIFY_BROWSERS=chromium DOCKER_CMD="$fake_docker" /bin/bash "$PREFLIGHT" "$ROOT" "$BATS_TEST_TMPDIR/browsers"
   [ "$status" -ne 0 ] || return 1
   [[ "$output" == *"required image is not cached"* ]] || return 1
 }
@@ -101,7 +106,7 @@ SH
 @test "Firefox preflight refuses missing NSS certutil without requiring it for Chromium" {
   local tool path_dir="$BATS_TEST_TMPDIR/path"
   mkdir -p "$path_dir"
-  for tool in awk curl df grep python3 tr; do
+  for tool in awk curl df dirname grep python3 tr; do
     ln -s "$(command -v "$tool")" "$path_dir/$tool"
   done
   run env PATH="$path_dir" VERIFY_BROWSERS="chromium firefox" DOCKER_CMD=missing-docker \

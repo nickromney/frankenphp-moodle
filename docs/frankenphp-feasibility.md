@@ -21,7 +21,7 @@ tests/docker/run-baseline.sh
 
 ## What Works
 
-The baseline builds a `dunglas/frankenphp:php8.4-bookworm` image, installs the missing Moodle PHP extensions, starts a MariaDB sidecar, runs the Moodle CLI installer on first boot, and verifies:
+The baseline builds a the pinned FrankenPHP image image, installs the missing Moodle PHP extensions, starts a MariaDB sidecar, runs the Moodle CLI installer on first boot, and verifies:
 
 - `HTTP 200` from the running HTTPS site
 - a live login page

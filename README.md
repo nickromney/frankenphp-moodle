@@ -76,14 +76,29 @@ The bundled `lovely` theme declares support for Moodle 5.2 and 5.3. Moodle 5.3
 moved Bootstrap's JavaScript into a core `bootstrap` bundle and replaced the
 course-index drawer's header block; the theme handles both branches.
 
+### PHP base image
+
+The Dockerfile pins FrankenPHP 1.13.2 with PHP 8.4.27 by multi-platform
+image digest. The [FrankenPHP 1.13.2 release notes](https://github.com/php/frankenphp/releases/tag/v1.13.2)
+identify PHP 8.4.27 as fixed for
+[GHSA-w8hw-w9fx-j79w](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w)
+and [GHSA-6wmf-4rv5-p3rp](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp).
+The digest was resolved from Docker Hub on 2026-10-28. You can override `FRANKENPHP_IMAGE` for a build. The source check inspects the Dockerfile, Compose defaults, and any shell
+override passed to it. It does not resolve a project `.env` file or a separate
+Compose command. The verification preflight resolves its own Compose config
+with `--env-file /dev/null` and rejects any image outside the reviewed
+allowlist. An override can still be used with a direct build,
+but that build has no PHP2Shell source proof from this check. This source selection does not prove
+which image or PHP runtime is deployed. The embedded serving runtime for this
+digest has not been independently verified.
+
 ### Moodle 4.4.2+
 
-Moodle 4.4.2 and later can be built with the same image. Use the 4.4 stable
-channel and PHP 8.3, which is the appropriate runtime for the Moodle 4.4
-support window:
+Moodle 4.4.2 and later can be built with the same image. To select PHP 8.3,
+use the 4.4 stable channel and the reviewed PHP 8.3 image:
 
 ```bash
-FRANKENPHP_IMAGE=dunglas/frankenphp:php8.3-bookworm \
+FRANKENPHP_IMAGE=dunglas/frankenphp:1.13.2-php8.3.36-bookworm@sha256:f1654d31e7aa17a19b8ee1815e76503369acf975bae212bf1cffae27e96186ac \
 MOODLE_SERIES=stable404 \
 MOODLE_VERSION=4.4.2 \
 docker compose up -d --build
