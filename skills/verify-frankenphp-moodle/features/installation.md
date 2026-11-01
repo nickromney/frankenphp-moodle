@@ -19,7 +19,7 @@ WebKit by default. `VERIFY_BROWSERS` explicitly narrows the browser scope.
 ## Gotchas
 
 A supervised container environment, 25 GiB free space, cached base images and
-Playwright 1.63.0 with its browser cache are prerequisites. The build has no
+Playwright 1.64.1 with its browser cache are prerequisites. The build has no
 network by default. Explicit `VERIFY_BUILD_NETWORK=default` permits package
 downloads during a supervised cold build; image pulls remain disabled. The clean-install settings ignore project dotenv and ambient Moodle
 settings; this does not exercise operator configuration or existing data.

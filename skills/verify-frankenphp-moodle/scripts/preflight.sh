@@ -73,7 +73,7 @@ import pathlib
 import sys
 
 cache = pathlib.Path(sys.argv[1])
-expected = "1.63.0"
+expected = "1.64.1"
 try:
     actual = importlib.metadata.version("playwright")
 except importlib.metadata.PackageNotFoundError:
