@@ -29,6 +29,31 @@ SH
   [[ "$output" == *"Docker CLI is unavailable"* ]] || return 1
 }
 
+@test "preflight checks only the browser selection passed by control" {
+  local fake_docker="$BATS_TEST_TMPDIR/docker" fake_python="$BATS_TEST_TMPDIR/python"
+  local cache="$BATS_TEST_TMPDIR/browsers" script="$BATS_TEST_TMPDIR/cache-check.py"
+  cat > "$fake_docker" <<'SH'
+#!/bin/sh
+case "$1 $2" in
+  "info "|"compose version"|"image inspect") exit 0 ;;
+esac
+exit 2
+SH
+  cat > "$fake_python" <<'SH'
+#!/bin/sh
+printf '%s\n' "$3" > "$BATS_TEST_TMPDIR/selected"
+cat > "$BATS_TEST_TMPDIR/cache-check.py"
+SH
+  chmod +x "$fake_docker" "$fake_python"
+  mkdir -p "$cache"
+  run env DOCKER_CMD="$fake_docker" VERIFY_PLAYWRIGHT_PYTHON="$fake_python" \
+    /bin/bash "$PREFLIGHT" "$ROOT" "$cache" "webkit"
+  [ "$status" -eq 0 ] || return 1
+  [ "$(cat "$BATS_TEST_TMPDIR/selected")" = webkit ] || return 1
+  grep -F -q 'selected = sys.argv[2].split()' "$script" || return 1
+  grep -F -q 'for name in selected:' "$script" || return 1
+}
+
 @test "invalid browser selection exits before creating state or evidence" {
   export VERIFY_BASE_DIR="$BATS_TEST_TMPDIR/base"
   export VERIFY_EVIDENCE_ROOT="$BATS_TEST_TMPDIR/evidence"

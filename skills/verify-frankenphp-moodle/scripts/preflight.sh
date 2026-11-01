@@ -3,6 +3,8 @@ set -euo pipefail
 
 ROOT="${1:?usage: preflight.sh PROJECT_ROOT BROWSER_CACHE}"
 BROWSER_CACHE="${2:?usage: preflight.sh PROJECT_ROOT BROWSER_CACHE}"
+BROWSERS="${3:-${VERIFY_BROWSERS:-chromium firefox webkit}}"
+BROWSERS="$(printf '%s' "$BROWSERS" | tr ',' ' ')"
 DOCKER_CMD="${DOCKER_CMD:-docker}"
 MIN_FREE_KIB=26214400
 PLAYWRIGHT_PYTHON="${VERIFY_PLAYWRIGHT_PYTHON:-$ROOT/.venv/bin/python}"
@@ -13,7 +15,7 @@ for tool in awk curl df grep python3 tr; do
     exit 1
   fi
 done
-for browser in $(printf '%s' "${VERIFY_BROWSERS:-chromium,firefox,webkit}" | tr ',' ' '); do
+for browser in $BROWSERS; do
   if [ "$browser" = firefox ] && ! command -v certutil >/dev/null 2>&1; then
     echo "FAIL: NSS certutil is required for task-local Firefox trust" >&2
     exit 1
@@ -66,13 +68,14 @@ if [ ! -d "$BROWSER_CACHE" ]; then
   echo "FAIL: shared Playwright browser cache is missing: $BROWSER_CACHE" >&2
   exit 1
 fi
-"$PLAYWRIGHT_PYTHON" - "$BROWSER_CACHE" <<'PY'
+"$PLAYWRIGHT_PYTHON" - "$BROWSER_CACHE" "$BROWSERS" <<'PY'
 import importlib.metadata
 import json
 import pathlib
 import sys
 
 cache = pathlib.Path(sys.argv[1])
+selected = sys.argv[2].split()
 expected = "1.63.0"
 try:
     actual = importlib.metadata.version("playwright")
@@ -88,13 +91,13 @@ if not manifest_path.is_file():
     print(f"FAIL: Playwright browser manifest missing: {manifest_path}", file=sys.stderr)
     raise SystemExit(1)
 manifest = json.loads(manifest_path.read_text())
-for name in ("chromium", "firefox", "webkit"):
+for name in selected:
     item = next((entry for entry in manifest["browsers"] if entry["name"] == name), None)
     revision = item["revision"] if item else "unknown"
     if item is None or not (cache / f"{name}-{revision}").is_dir():
         print(f"FAIL: Playwright {expected} {name} revision {revision} missing from {cache}", file=sys.stderr)
         raise SystemExit(1)
-print(f"OK: Playwright {actual} and Chromium, Firefox, WebKit cache are ready")
+print(f"OK: Playwright {actual} and {', '.join(selected)} cache are ready")
 PY
 
 echo "OK: Docker Compose, 25 GiB free-space floor, cached build/runtime images, and browser runtime are ready"

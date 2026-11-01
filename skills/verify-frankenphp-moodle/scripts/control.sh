@@ -81,7 +81,9 @@ allocate_port() {
 cmd_launch() {
   safe_project_name
   mkdir -p "$STATE" "$EVIDENCE"
-  /bin/bash "$VK_SKILL_DIR/scripts/preflight.sh" "$VK_ROOT" "${PLAYWRIGHT_BROWSERS_PATH:-${VERIFY_BROWSER_CACHE:-}}" > "$EVIDENCE/preflight.txt" 2>&1 || {
+  local browsers
+  browsers="$(vk_browsers)" || return $?
+  /bin/bash "$VK_SKILL_DIR/scripts/preflight.sh" "$VK_ROOT" "${PLAYWRIGHT_BROWSERS_PATH:-${VERIFY_BROWSER_CACHE:-}}" "$browsers" > "$EVIDENCE/preflight.txt" 2>&1 || {
     cat "$EVIDENCE/preflight.txt" >&2
     vk_fail "Docker preflight failed before any build or container start; see $EVIDENCE/preflight.txt"
     return 1
